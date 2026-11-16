@@ -1,0 +1,14 @@
+# robots.txt - 어두운 밤숲과 5개의 촛불 포트폴리오
+# 기본값: 검색엔진 크롤링을 허용합니다.
+# TODO: 비공개 채용 지원 용도로만 링크를 공유하며 검색 노출을 차단하려면
+# 아래 Allow: / 를 지우고 Disallow: / 로 변경하세요 (index.html의 robots 메타태그도 noindex로 변경).
+
+User-agent: *
+Allow: /
+
+# 비공개 전환 시 예시:
+# User-agent: *
+# Disallow: /
+
+# TODO: 실제 배포 도메인 확보 후 아래 Sitemap 주소를 업데이트하세요.
+# Sitemap: https://your-portfolio-domain.pages.dev/sitemap.xml

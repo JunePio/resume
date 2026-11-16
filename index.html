@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이준영 | 고요한 밤숲의 서재 — iOS Developer · QA · Creator</title>
+  <meta name="description" content="기획·상용 iOS 앱 개발(PosePik, Lumio)·SW QA 검증·영상·스토리텔링을 아우르는 이준영의 인터랙티브 이력서 및 멀티 포맷 포트폴리오">
+
+  <!-- TODO: Google Search Console 및 네이버 서치어드바이저 소유권 확인 후 실제 인증 코드를 입력하세요 -->
+  <meta name="google-site-verification" content="TODO_GOOGLE_VERIFICATION_CODE">
+  <meta name="naver-site-verification" content="TODO_NAVER_VERIFICATION_CODE">
+
+  <!-- TODO: 비공개 채용 지원용으로만 링크를 공유하고 검색 노출을 막으려면 content="noindex, nofollow" 로 변경하세요 -->
+  <meta name="robots" content="index, follow">
+
+  <!-- TODO: GitHub Pages 또는 Cloudflare Pages 실제 배포 URL로 교체하세요 -->
+  <link rel="canonical" href="https://your-portfolio-domain.pages.dev/">
+
+  <!-- Open Graph / Twitter Card -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:site_name" content="이준영 포트폴리오 | 고요한 밤숲의 서재">
+  <meta property="og:title" content="이준영 | 어두운 밤숲과 5개의 촛불 — iOS · QA · Creator">
+  <meta property="og:description" content="다섯 개의 촛불을 밝혀 상용 iOS 앱(PosePik, Lumio), QA 테스트 자동화 리포트, 영상 아카이브, 창작 소설 서재를 살펴보세요.">
+  <meta property="og:image" content="assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="이준영 | 어두운 밤숲과 5개의 촛불 — iOS · QA · Creator">
+  <meta name="twitter:description" content="상용 iOS 앱 개발(PosePik, Lumio) · SW QA 검증 · 영상편집 · 창작 스토리텔링 포트폴리오">
+  <meta name="twitter:image" content="assets/og-image.png">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Webfonts CDN: Pretendard, MaruBuri, Noto Serif KR, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://hangeul.pstatic.net/hangeul_static/css/maru-buri.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-lit-count="0">
+  <!-- 상단 고정 랜턴 내비게이션 바 (Recruiter Fast-Track) -->
+  <header class="lantern-bar" role="banner">
+    <div class="lantern-inner">
+      <a href="#forest-stage" class="lantern-brand" id="brand-top-link">
+        <span class="lantern-emblem" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path d="M12 2.5C14.8 6.4 16.4 9.7 15.6 12.6C15.1 14.5 13.7 15.8 12 15.8C10.3 15.8 8.9 14.5 8.4 12.6C7.6 9.7 9.2 6.4 12 2.5Z" fill="#FBBF24"/>
+            <ellipse cx="12" cy="12" rx="1.6" ry="2.8" fill="#FFFDF5"/>
+            <rect x="9" y="16" width="6" height="5" rx="1" fill="#C59B5F"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong id="nav-profile-name">이준영</strong>
+          <span class="brand-sep" aria-hidden="true">·</span>
+          <span id="nav-profile-tagline" class="brand-role">iOS Developer · QA · Creator</span>
+        </span>
+      </a>
+
+      <nav class="lantern-controls" aria-label="사운드 및 빠른 이력서 메뉴">
+        <div class="sound-control-wrap">
+          <button
+            type="button"
+            id="sound-toggle-btn"
+            class="lantern-btn lantern-sound-btn"
+            aria-pressed="false"
+            aria-label="밤숲 바람 및 촛불 소리 켜기 또는 끄기"
+          >
+            <span class="sound-bars" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </span>
+            <span id="sound-toggle-label">밤숲 소리 Off</span>
+          </button>
+
+          <label class="volume-control" title="밤숲 사운드 볼륨">
+            <span class="sr-only">사운드 볼륨</span>
+            <input
+              id="sound-volume-slider"
+              type="range"
+              min="0"
+              max="100"
+              value="45"
+              aria-label="밤숲 사운드 볼륨"
+            >
+            <span id="sound-volume-value" class="mono-num">45%</span>
+          </label>
+
+          <div id="sound-guide-tooltip" class="sound-guide-tooltip" role="status">
+            클릭하면 잔잔한 밤숲 바람과 5단계 촛불 소리가 켜집니다
+          </div>
+        </div>
+
+        <button type="button" id="light-all-btn" class="lantern-btn lantern-btn-accent">
+          모든 촛불 켜기 <span aria-hidden="true">✦</span>
+        </button>
+
+        <a
+          id="nav-resume-link"
+          class="lantern-btn lantern-btn-pdf"
+          href="#"
+          target="_blank"
+          rel="noopener"
+        >이력서 PDF <span aria-hidden="true">↗</span></a>
+
+        <a
+          id="nav-cover-link"
+          class="lantern-btn lantern-btn-pdf"
+          href="#"
+          target="_blank"
+          rel="noopener"
+        >자기소개서 PDF <span aria-hidden="true">↗</span></a>
+
+        <a
+          id="nav-linkedin-link"
+          class="lantern-btn lantern-btn-linkedin"
+          href="https://www.linkedin.com/in/younghwen/"
+          target="_blank"
+          rel="noopener"
+        >LinkedIn <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 밤숲 스테이지 & 대칭형 5개의 빈 초 -->
+  <section class="forest-stage" id="forest-stage" data-lit-count="0" aria-label="밤숲 서재 무대와 다섯 개의 촛불">
+    <div class="sky-backdrop" aria-hidden="true"></div>
+    <div class="moon-haze" aria-hidden="true"></div>
+    <div class="ambient-stage-glow" aria-hidden="true"></div>
+
+    <!-- 다중 레이어 인라인 SVG 침엽수림 패럴랙스 -->
+    <div class="forest-parallax" aria-hidden="true">
+      <svg class="forest-layer forest-layer-far" viewBox="0 0 1440 340" preserveAspectRatio="none">
+        <path fill="#09111B" d="M0 340 L0 218 L28 164 L54 224 L82 142 L114 218 L142 174 L170 232 L202 128 L236 220 L264 156 L296 226 L326 144 L356 218 L384 182 L416 236 L448 158 L480 226 L510 170 L542 230 L574 146 L608 220 L640 186 L674 236 L708 160 L740 228 L774 176 L806 232 L840 140 L874 222 L906 168 L938 228 L972 150 L1006 220 L1038 178 L1070 234 L1102 138 L1136 222 L1168 164 L1200 228 L1234 152 L1266 222 L1298 174 L1330 230 L1362 148 L1396 220 L1422 180 L1440 212 L1440 340 Z"/>
+      </svg>
+
+      <svg class="forest-layer forest-layer-mid" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#070D16" d="M0 320 L0 198 L24 128 L46 190 L64 154 L88 214 L118 108 L146 196 L168 148 L194 218 L224 118 L254 206 L282 158 L312 222 L344 134 L374 210 L402 168 L434 228 L466 152 L498 222 L530 176 L562 234 L594 148 L628 224 L662 186 L696 238 L730 164 L764 226 L798 172 L832 232 L866 142 L900 220 L932 162 L966 228 L1000 132 L1032 214 L1064 166 L1096 226 L1128 122 L1162 210 L1194 154 L1228 218 L1260 112 L1294 204 L1326 146 L1360 214 L1392 126 L1424 202 L1440 176 L1440 320 Z"/>
+      </svg>
+
+      <svg class="forest-layer forest-layer-near" viewBox="0 0 1440 300" preserveAspectRatio="none">
+        <path fill="#05080F" d="M0 300 L0 146 L22 86 L42 156 L58 118 L82 192 L106 72 L134 186 L158 134 L188 218 L218 104 L248 206 L278 164 L310 234 L344 148 L378 226 L414 188 L452 246 L490 212 L528 256 L568 232 L608 264 L654 252 L720 268 L786 254 L836 264 L876 232 L916 256 L954 212 L992 246 L1028 184 L1064 224 L1098 144 L1134 218 L1168 158 L1200 214 L1232 102 L1264 198 L1294 134 L1324 196 L1352 76 L1382 184 L1408 118 L1432 178 L1440 154 L1440 300 Z"/>
+      </svg>
+
+      <div class="forest-mist"></div>
+    </div>
+
+    <!-- 반딧불이 & 촛불 불티 파티클 Canvas -->
+    <canvas id="forest-canvas" aria-hidden="true"></canvas>
+
+    <!-- 중앙 타이틀 및 점화 상태 안내 -->
+    <div class="stage-intro">
+      <p id="stage-eyebrow" class="stage-eyebrow">MIDNIGHT FOREST STUDY</p>
+      <h1 id="stage-headline" class="stage-headline">어두운 밤숲, 다섯 개의 촛불로 기록한 설계와 검증, 그리고 이야기</h1>
+      <p id="stage-subheadline" class="stage-subheadline">원하는 촛불을 켜서 이력과 상용 iOS 앱, QA 리포트, 영상 아카이브, 창작 서재를 살펴보세요.</p>
+      <div class="lit-status-pill" aria-live="polite">
+        <span class="lit-dot" aria-hidden="true"></span>
+        <span>켜진 촛불 <strong id="lit-count-number" class="mono-num">0</strong> <span class="mono-num">/ 5</span></span>
+        <span class="lit-sound-hint" id="lit-sound-hint">· 사운드 Off</span>
+      </div>
+    </div>
+
+    <!-- 원목 선반 위 대칭형 5구 촛대 -->
+    <div class="candelabra-wrap">
+      <div class="candelabra-shelf" id="candelabra-shelf" role="tablist" aria-label="다섯 개의 포트폴리오 촛불">
+        <!-- JS에서 candlesMeta를 기반으로 5개 촛불 버튼 생성 (SEO/초기 렌더 보완을 위해 정적 폴백 포함) -->
+      </div>
+
+      <div class="walnut-desk" aria-hidden="true">
+        <div class="walnut-glow-pool"></div>
+        <div class="walnut-edge"></div>
+        <div class="walnut-apron"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 하단 포트폴리오 쇼케이스 패널 영역 -->
+  <main id="showcase-container" class="showcase-container" aria-label="선택된 포트폴리오 쇼케이스">
+    <section id="showcase-empty-state" class="showcase-empty-state">
+      <div class="empty-card">
+        <p class="empty-eyebrow">FIVE CANDLES ARCHIVE</p>
+        <h2 class="empty-title">아직 불이 켜진 초가 없습니다</h2>
+        <p class="empty-desc">
+          위의 다섯 개의 초 중 하나를 클릭해 어두운 서재를 밝히거나, 모든 촛불을 한 번에 켜서 전체 포트폴리오를 스크롤로 탐색해 보세요.
+        </p>
+        <div class="empty-actions">
+          <button type="button" class="btn-brass-solid" id="empty-ignite-first-btn">
+            제1초 [기록과 증명] 켜기
+          </button>
+          <button type="button" class="btn-brass-outline" id="empty-light-all-btn">
+            모든 촛불 켜기 ✦
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div id="showcase-workspace" class="showcase-workspace" hidden>
+      <div class="showcase-mode-bar" id="showcase-mode-bar">
+        <div class="mode-pills" id="mode-candle-pills" role="navigation" aria-label="촛불 섹션 빠른 이동"></div>
+        <div class="mode-actions">
+          <span class="mode-badge" id="view-mode-badge">단일 촛불 집중 보기</span>
+          <button type="button" class="btn-mode-toggle" id="toggle-view-mode-btn">
+            5개 전체 통합 보기
+          </button>
+        </div>
+      </div>
+
+      <div id="showcase-panels" class="showcase-panels"></div>
+    </div>
+  </main>
+
+  <footer class="forest-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">
+        <span id="footer-name">이준영</span> · <span id="footer-tagline">iOS Developer · QA · Creator</span>
+        <span class="footer-sep">·</span>
+        <span>Built with Pure HTML5, CSS3, Vanilla JS &amp; Web Audio API</span>
+      </p>
+      <div class="footer-links">
+        <a id="footer-resume-link" href="#" target="_blank" rel="noopener">이력서 PDF ↗</a>
+        <a id="footer-cover-link" href="#" target="_blank" rel="noopener">자기소개서 PDF ↗</a>
+        <a id="footer-linkedin-link" href="https://www.linkedin.com/in/younghwen/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="#forest-stage">촛대로 돌아가기 ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 시네마 영상 라이트박스 모달 -->
+  <div
+    id="video-lightbox"
+    class="modal-overlay lightbox-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="lightbox-title"
+    hidden
+  >
+    <div class="modal-backdrop" data-close-lightbox="true"></div>
+    <div class="lightbox-dialog">
+      <header class="lightbox-header">
+        <div class="lightbox-title-group">
+          <span id="lightbox-badge" class="mono-badge">CINEMA PREVIEW</span>
+          <h2 id="lightbox-title" class="lightbox-title">영상 제목</h2>
+        </div>
+        <div class="lightbox-header-actions">
+          <a
+            id="lightbox-external-link"
+            class="btn-ghost-sm"
+            href="#"
+            target="_blank"
+            rel="noopener"
+          >YouTube에서 열기 ↗</a>
+          <button type="button" id="lightbox-close-btn" class="btn-close-modal" aria-label="영상 모달 닫기">
+            닫기 ✕
+          </button>
+        </div>
+      </header>
+      <div class="lightbox-stage">
+        <iframe
+          id="lightbox-iframe"
+          src=""
+          title="포트폴리오 영상 플레이어"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <p class="lightbox-duck-note">
+        영상 시청 중에는 밤숲 배경 사운드가 자동으로 일시 음소거되며, 창을 닫으면 복원됩니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 촛불 E-Book 전용 리더기 모달 -->
+  <div
+    id="ebook-modal"
+    class="modal-overlay ebook-overlay"
+    data-reader-theme="parchment"
+    data-reader-font="serif"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="ebook-title"
+    hidden
+  >
+    <div class="ebook-shell">
+      <!-- 상단 실시간 0~100% 독서 진행률 바 -->
+      <div class="ebook-progress-track" aria-hidden="true">
+        <div id="ebook-progress-bar" class="ebook-progress-fill" style="width: 0%;"></div>
+      </div>
+
+      <header class="ebook-toolbar">
+        <div class="ebook-book-meta">
+          <span id="ebook-category-badge" class="ebook-category-pill">단편소설</span>
+          <div class="ebook-title-stack">
+            <h2 id="ebook-title" class="ebook-title">작품 제목</h2>
+            <p id="ebook-stats" class="ebook-stats mono-num">약 10분 소요</p>
+          </div>
+        </div>
+
+        <div class="ebook-controls">
+          <span id="ebook-progress-text" class="ebook-progress-label mono-num">0%</span>
+
+          <div class="ebook-control-group" role="group" aria-label="글자 크기 조절">
+            <button type="button" id="ebook-font-dec" class="reader-ctrl-btn" aria-label="글자 작게">A-</button>
+            <span id="ebook-font-size-label" class="reader-size-label mono-num">17px</span>
+            <button type="button" id="ebook-font-inc" class="reader-ctrl-btn" aria-label="글자 크게">A+</button>
+          </div>
+
+          <div class="ebook-control-group" role="group" aria-label="서체 전환">
+            <button type="button" id="ebook-font-serif" class="reader-ctrl-btn is-active" data-font="serif">명조</button>
+            <button type="button" id="ebook-font-sans" class="reader-ctrl-btn" data-font="sans">고딕</button>
+          </div>
+
+          <div class="ebook-control-group" role="group" aria-label="배경 테마 전환">
+            <button
+              type="button"
+              class="reader-theme-btn is-active"
+              data-theme="parchment"
+              title="따뜻한 양피지"
+              aria-label="따뜻한 양피지 테마"
+            >양피지</button>
+            <button
+              type="button"
+              class="reader-theme-btn"
+              data-theme="white"
+              title="화이트"
+              aria-label="화이트 테마"
+            >화이트</button>
+            <button
+              type="button"
+              class="reader-theme-btn"
+              data-theme="dark"
+              title="촛불 다크"
+              aria-label="촛불 다크 테마"
+            >다크</button>
+          </div>
+
+          <button type="button" id="ebook-close-btn" class="reader-close-btn" aria-label="서재로 돌아가기">
+            서재로 ✕
+          </button>
+        </div>
+      </header>
+
+      <div id="ebook-scroll-body" class="ebook-scroll-body" tabindex="0">
+        <article class="ebook-manuscript" id="ebook-manuscript">
+          <header class="manuscript-header">
+            <p id="manuscript-genre" class="manuscript-genre"></p>
+            <h1 id="manuscript-title" class="manuscript-title"></h1>
+            <p id="manuscript-logline" class="manuscript-logline"></p>
+            <div class="manuscript-divider" aria-hidden="true"><span>✦</span></div>
+          </header>
+          <div id="ebook-content" class="manuscript-body"></div>
+          <footer class="manuscript-end">
+            <span class="manuscript-end-mark">― 끝 ―</span>
+          </footer>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <!-- QA 산출물 통합 웹 뷰어 모달 (3개 시트 · 219 TC) -->
+  <div
+    id="qa-workbook-modal"
+    class="modal-overlay qa-modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="qa-modal-title"
+    hidden
+  >
+    <div class="modal-backdrop" data-close-qa-modal="true"></div>
+    <div class="qa-modal-dialog">
+      <header class="qa-modal-header">
+        <div class="qa-modal-title-group">
+          <span class="mono-badge">QA DELIVERABLE · 3 SHEETS · 219 TC</span>
+          <h2 id="qa-modal-title" class="qa-modal-title">구마야 산책가자 — QA 산출물 통합 뷰어</h2>
+          <p id="qa-modal-subtitle" class="qa-modal-subtitle">작성자: 이준영 · 총 219개 테스트케이스 · 27개 결함 · 결과 보고서</p>
+        </div>
+        <div class="qa-modal-header-actions">
+          <a
+            id="qa-modal-download-link"
+            class="btn-brass-solid"
+            href="#"
+            download
+          >원본 Excel (.xlsx) 다운로드 ⬇</a>
+          <button type="button" id="qa-modal-close-btn" class="btn-close-modal" aria-label="QA 문서 뷰어 닫기">
+            닫기 ✕
+          </button>
+        </div>
+      </header>
+
+      <div class="qa-tabs-bar" id="qa-tabs-bar" role="tablist" aria-label="QA 문서 시트 목록">
+        <button type="button" class="qa-sheet-tab is-active" role="tab" aria-selected="true" data-qa-sheet="test-cases">
+          테스터케이스 <span class="mono-num">(219)</span>
+        </button>
+        <button type="button" class="qa-sheet-tab" role="tab" aria-selected="false" data-qa-sheet="defects">
+          결함리스트 <span class="mono-num">(27)</span>
+        </button>
+        <button type="button" class="qa-sheet-tab" role="tab" aria-selected="false" data-qa-sheet="report">
+          테스트 결과 보고서
+        </button>
+      </div>
+
+      <div class="qa-filter-bar" id="qa-filter-bar">
+        <input
+          type="search"
+          id="qa-search-input"
+          class="qa-search-input"
+          placeholder="TC-ID, 기능명, 제목, 내용 검색..."
+          aria-label="QA 항목 검색"
+        >
+        <select id="qa-category-filter" class="qa-select" aria-label="대분류 필터">
+          <option value="ALL">전체 대분류</option>
+        </select>
+        <div class="qa-status-pills" id="qa-status-pills" role="group" aria-label="결과 상태 필터">
+          <button type="button" class="qa-filter-pill is-active" data-qa-status="ALL">전체</button>
+          <button type="button" class="qa-filter-pill" data-qa-status="PASS">PASS</button>
+          <button type="button" class="qa-filter-pill" data-qa-status="FAIL">FAIL</button>
+        </div>
+        <span id="qa-visible-count" class="qa-visible-count mono-num">219건 표시</span>
+      </div>
+
+      <div id="qa-modal-body" class="qa-modal-body" tabindex="0"></div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- 로컬 file:// CORS 회피용 순차 클래식 스크립트 로드 -->
+  <script src="js/data.js"></script>
+  <script src="js/novels-data.js"></script>
+  <script src="js/qa-sheets-data.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG 대표 이미지 생성기 (1200x630) — 어두운 밤숲과 5개의 촛불</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Noto+Serif+KR:wght@600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #060911 0%, #0C1420 100%);
+      color: #F5F0E6;
+      font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+      padding: 32px 20px;
+      word-break: keep-all;
+    }
+    .wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-family: 'Noto Serif KR', serif;
+      font-size: 1.55rem;
+    }
+    .desc {
+      margin: 0 0 22px;
+      color: #B6B0A6;
+      font-size: 0.92rem;
+    }
+    .desc code {
+      font-family: 'JetBrains Mono', monospace;
+      color: #FBBF24;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      padding: 18px;
+      margin-bottom: 22px;
+      border-radius: 14px;
+      background: rgba(15, 18, 25, 0.86);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #B6B0A6;
+    }
+    input[type="text"] {
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid rgba(197, 155, 95, 0.34);
+      background: #090D15;
+      color: #F5F0E6;
+      font-size: 0.88rem;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      background: linear-gradient(135deg, #D99B38 0%, #B47824 100%);
+      color: #140E07;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-outline {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(197, 155, 95, 0.4);
+      background: transparent;
+      color: #F5F0E6;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .preview-frame {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(197, 155, 95, 0.3);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+      background: #060911;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Open Graph 대표 썸네일 생성기 (1200 × 630)</h1>
+    <p class="desc">
+      밤숲과 다섯 개의 금빛 촛불 무드의 OG 이미지를 렌더링합니다. 다운로드한 파일을 <code>assets/og-image.png</code> 경로에 저장하면 카카오톡·링크드인·트위터 공유 시 즉시 반영됩니다.
+    </p>
+
+    <div class="controls">
+      <label>
+        상단 영문 라벨
+        <input type="text" id="og-eyebrow" value="MIDNIGHT FOREST STUDY">
+      </label>
+      <label>
+        메인 타이틀
+        <input type="text" id="og-title" value="어두운 밤숲과 5개의 촛불">
+      </label>
+      <label>
+        이름 및 정체성
+        <input type="text" id="og-subtitle" value="이준영 · iOS Developer · QA · Creator">
+      </label>
+      <label>
+        하단 세부 요약
+        <input type="text" id="og-tags" value="PosePik · Lumio · SW QA &amp; Appium · Video · Creative Stories">
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" id="download-btn">PNG 이미지 다운로드 (og-image.png)</button>
+      <button type="button" class="btn-outline" id="redraw-btn">반딧불이 재배치 및 다시 그리기</button>
+      <a class="btn-outline" href="index.html">포트폴리오로 돌아가기 ↗</a>
+    </div>
+
+    <div class="preview-frame">
+      <canvas id="og-canvas" width="1200" height="630"></canvas>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById('og-canvas');
+      const ctx = canvas.getContext('2d');
+
+      const inputs = {
+        eyebrow: document.getElementById('og-eyebrow'),
+        title: document.getElementById('og-title'),
+        subtitle: document.getElementById('og-subtitle'),
+        tags: document.getElementById('og-tags')
+      };
+
+      let fireflySeed = 42;
+      function seededRandom() {
+        fireflySeed = (fireflySeed * 1664525 + 1013904223) % 4294967296;
+        return fireflySeed / 4294967296;
+      }
+
+      function drawPineLayer(baseY, peaks, color, maxH) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(0, 630);
+        ctx.lineTo(0, baseY);
+        const step = 1200 / peaks;
+        for (let i = 0; i < peaks; i++) {
+          const x0 = i * step;
+          const xMid = x0 + step * 0.5;
+          const x1 = (i + 1) * step;
+          const h = maxH * (0.55 + seededRandom() * 0.45);
+          ctx.lineTo(xMid, baseY - h);
+          ctx.lineTo(x1, baseY - (seededRandom() * 18));
+        }
+        ctx.lineTo(1200, 630);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawCandle(cx, shelfY, waxHeight) {
+        const waxWidth = 34;
+        const brassH = 26;
+        const waxBottom = shelfY - brassH;
+        const waxTop = waxBottom - waxHeight;
+
+        // Ambient flame halo
+        const halo = ctx.createRadialGradient(cx, waxTop - 26, 4, cx, waxTop - 26, 128);
+        halo.addColorStop(0, 'rgba(255, 253, 245, 0.45)');
+        halo.addColorStop(0.28, 'rgba(251, 191, 36, 0.25)');
+        halo.addColorStop(0.6, 'rgba(234, 88, 12, 0.10)');
+        halo.addColorStop(1, 'rgba(234, 88, 12, 0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(cx, waxTop - 26, 128, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Outer flame
+        ctx.fillStyle = '#EA580C';
+        ctx.beginPath();
+        ctx.moveTo(cx, waxTop - 54);
+        ctx.bezierCurveTo(cx + 18, waxTop - 32, cx + 16, waxTop - 10, cx, waxTop - 8);
+        ctx.bezierCurveTo(cx - 16, waxTop - 10, cx - 18, waxTop - 32, cx, waxTop - 54);
+        ctx.fill();
+
+        // Inner flame
+        ctx.fillStyle = '#FBBF24';
+        ctx.beginPath();
+        ctx.moveTo(cx, waxTop - 44);
+        ctx.bezierCurveTo(cx + 11, waxTop - 26, cx + 10, waxTop - 11, cx, waxTop - 10);
+        ctx.bezierCurveTo(cx - 10, waxTop - 11, cx - 11, waxTop - 26, cx, waxTop - 44);
+        ctx.fill();
+
+        // Core
+        ctx.fillStyle = '#FFFDF5';
+        ctx.beginPath();
+        ctx.ellipse(cx, waxTop - 19, 3.6, 8.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Wick
+        ctx.strokeStyle = '#2B1B10';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(cx, waxTop - 9);
+        ctx.lineTo(cx, waxTop);
+        ctx.stroke();
+
+        // Wax cylinder
+        const waxGrad = ctx.createLinearGradient(cx - waxWidth / 2, 0, cx + waxWidth / 2, 0);
+        waxGrad.addColorStop(0, '#9F917E');
+        waxGrad.addColorStop(0.45, '#F5EFE3');
+        waxGrad.addColorStop(1, '#8D7E6B');
+        ctx.fillStyle = waxGrad;
+        ctx.fillRect(cx - waxWidth / 2, waxTop, waxWidth, waxHeight);
+
+        // Warm top wax melt
+        const meltGrad = ctx.createLinearGradient(0, waxTop, 0, waxTop + 28);
+        meltGrad.addColorStop(0, 'rgba(251, 191, 36, 0.45)');
+        meltGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+        ctx.fillStyle = meltGrad;
+        ctx.fillRect(cx - waxWidth / 2, waxTop, waxWidth, 28);
+
+        // Brass holder
+        const brassGrad = ctx.createLinearGradient(cx - 26, 0, cx + 26, 0);
+        brassGrad.addColorStop(0, '#6E5128');
+        brassGrad.addColorStop(0.5, '#E3C28B');
+        brassGrad.addColorStop(1, '#684C25');
+        ctx.fillStyle = brassGrad;
+        ctx.fillRect(cx - 22, waxBottom, 44, 8);
+        ctx.fillRect(cx - 7, waxBottom + 8, 14, 10);
+        ctx.fillRect(cx - 26, waxBottom + 18, 52, 8);
+      }
+
+      function renderOgCanvas() {
+        fireflySeed = 42 + Math.floor(Math.random() * 1000);
+        // Deterministic on initial draw
+        if (!window.__ogUserRedrawn) fireflySeed = 108;
+
+        // Midnight forest sky gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, 630);
+        sky.addColorStop(0, '#060911');
+        sky.addColorStop(0.55, '#0C1420');
+        sky.addColorStop(1, '#121D28');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, 1200, 630);
+
+        // Warm central glow behind candelabra
+        const stageGlow = ctx.createRadialGradient(600, 440, 20, 600, 440, 560);
+        stageGlow.addColorStop(0, 'rgba(245, 158, 11, 0.24)');
+        stageGlow.addColorStop(0.55, 'rgba(234, 88, 12, 0.08)');
+        stageGlow.addColorStop(1, 'rgba(6, 9, 17, 0)');
+        ctx.fillStyle = stageGlow;
+        ctx.fillRect(0, 0, 1200, 630);
+
+        // Conifer silhouette layers
+        drawPineLayer(515, 24, '#09111B', 140);
+        drawPineLayer(530, 19, '#070D16', 175);
+        drawPineLayer(545, 16, '#05080F', 200);
+
+        // Fireflies
+        for (let i = 0; i < 42; i++) {
+          const x = seededRandom() * 1200;
+          const y = 40 + seededRandom() * 440;
+          const r = 1.5 + seededRandom() * 2.5;
+          const alpha = 0.25 + seededRandom() * 0.55;
+          const g = ctx.createRadialGradient(x, y, 0, x, y, r * 6);
+          g.addColorStop(0, 'rgba(251, 191, 36, ' + alpha + ')');
+          g.addColorStop(1, 'rgba(251, 191, 36, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(x, y, r * 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Walnut desk & golden reflection
+        const shelfY = 556;
+        ctx.fillStyle = '#1B1411';
+        ctx.fillRect(0, shelfY, 1200, 74);
+        ctx.fillStyle = '#2B1F19';
+        ctx.fillRect(0, shelfY, 1200, 10);
+        ctx.strokeStyle = 'rgba(197, 155, 95, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, shelfY);
+        ctx.lineTo(1200, shelfY);
+        ctx.stroke();
+
+        // Symmetrical 5 candles
+        const xs = [320, 460, 600, 740, 880];
+        const hs = [82, 102, 122, 102, 82];
+        for (let i = 0; i < 5; i++) {
+          drawCandle(xs[i], shelfY, hs[i]);
+        }
+
+        // Typography overlay
+        ctx.textAlign = 'center';
+
+        ctx.font = '500 17px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#C59B5F';
+        ctx.fillText(inputs.eyebrow.value, 600, 96);
+
+        ctx.font = '700 54px "Noto Serif KR", Georgia, serif';
+        ctx.fillStyle = '#F5F0E6';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+        ctx.shadowBlur = 18;
+        ctx.fillText(inputs.title.value, 600, 168);
+
+        ctx.font = '600 26px "Pretendard", sans-serif';
+        ctx.fillStyle = '#FDE68A';
+        ctx.shadowBlur = 10;
+        ctx.fillText(inputs.subtitle.value, 600, 224);
+
+        ctx.font = '400 18px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#B6B0A6';
+        ctx.shadowBlur = 0;
+        ctx.fillText(inputs.tags.value, 600, 272);
+
+        // Outer antique brass frame
+        ctx.strokeStyle = 'rgba(197, 155, 95, 0.38)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, 20, 1160, 590);
+      }
+
+      Object.values(inputs).forEach(function (inp) {
+        inp.addEventListener('input', renderOgCanvas);
+      });
+
+      document.getElementById('redraw-btn').addEventListener('click', function () {
+        window.__ogUserRedrawn = true;
+        renderOgCanvas();
+      });
+
+      document.getElementById('download-btn').addEventListener('click', function () {
+        const link = document.createElement('a');
+        link.download = 'og-image.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+
+      window.getOgPngDataUrl = function () {
+        renderOgCanvas();
+        return canvas.toDataURL('image/png');
+      };
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(renderOgCanvas);
+      }
+      renderOgCanvas();
+    })();
+  </script>
+</body>
+</html>
