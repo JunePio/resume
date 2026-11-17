@@ -211,7 +211,7 @@ window.PORTFOLIO_DATA = {
         category: 'AI · QA 프로젝트',
         period: '2025.07 ~ 2025.12',
         org: '구마야 산책가자 (NVIDIA AI Academy)',
-        position: 'QA 리드 · AI/지도 개발',
+        position: 'QA 리드 · AI LLM/LBS(위치기반서비스) 개발',
         duties: '219개 테스트케이스(TC) 설계·27건 결함 관리·최종 품질 보고서(PASS 87.7%→93.2%) 주도, LLM 챗봇 RAG 구축, 플레이스 지도·마커 클러스터링 및 FastAPI+Appium 모바일 자동화 구현',
         stack: 'SW QA · LLM RAG · FastAPI · Appium · Python'
       },
@@ -236,7 +236,7 @@ window.PORTFOLIO_DATA = {
         period: '2017.10 ~ 2018.03',
         org: '웹 · CMS 구축 에이전시',
         position: '주임',
-        duties: '오름 홈페이지(CMS) 전면 리뉴얼 구축 및 프론트엔드 스크립트 구현',
+        duties: '회사 홈페이지(CMS) 전면 리뉴얼 구축 및 프론트엔드 스크립트 구현',
         stack: 'PHP · JavaScript · jQuery'
       },
       {
@@ -252,7 +252,7 @@ window.PORTFOLIO_DATA = {
         period: '2014.07 ~ 2015.07',
         org: '빅데이터 플랫폼 벤처기업',
         position: '플랫폼개발팀 · 선임연구원',
-        duties: '빅데이터 플랫폼 프로젝트(‘라온 2.0’) 업그레이드 개발, 프론트엔드 및 공식 회사 홈페이지 개발·운영, 공모전·사업 기획서 작성',
+        duties: '빅데이터 플랫폼 프로젝트(‘라온 2.0’) 업그레이드 개발, 프론트엔드 및 공식 회사 홈페이지 개발·운영, 공모전·사업 기획서 작성 보조',
         stack: 'Front-End · Big Data Platform · Web'
       },
       {
@@ -470,7 +470,7 @@ window.PORTFOLIO_DATA = {
             companyDesc: '클라우드 대시보드 및 기업 웹·CMS 구축 기업',
             tasks: [
               'React · Node.js 기반 클라우드 포털 대시보드 프론트엔드 및 연동 기능 개발',
-              'PHP · JavaScript · jQuery 기반 오름 홈페이지(CMS) 전면 리뉴얼 구축'
+              'PHP · JavaScript · jQuery 기반 회사 홈페이지(CMS) 전면 리뉴얼 구축'
             ]
           },
           {
