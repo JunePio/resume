@@ -5,6 +5,7 @@
 
 User-agent: *
 Allow: /
+Disallow: /admin.html
 
 # 비공개 전환 시 예시:
 # User-agent: *

@@ -17,12 +17,17 @@ window.PORTFOLIO_DATA = {
   },
 
   analyticsConfig: {
+    // TODO: Cloudflare Worker 배포 후 생성된 URL을 입력하세요 (예: 'https://resume-logger.계정명.workers.dev').
+    // 비워두면 원격 전송을 생략하고 로컬 미리보기 미러(enableLocalMirror)에만 기록합니다.
+    logApiUrl: 'https://resume-visitor-logger.younghwen.workers.dev',
+    // 로컬 브라우저에서도 admin.html 동작을 즉시 확인·테스트할 수 있도록 localStorage 미러 저장 활성화
+    enableLocalMirror: true,
     // TODO: Google Analytics 4 측정 ID를 입력하세요 (예: 'G-XXXXXXXXXX'). 비워두면 로드하지 않습니다.
     gaMeasurementId: '',
     // TODO: Cloudflare Web Analytics 토큰을 입력하세요. 비워두면 로드하지 않습니다.
     cloudflareToken: '',
-    // TODO: 실서비스 배포 시 콘솔 로그를 끄려면 false로 변경하세요.
-    debugMode: true
+    // 브라우저 콘솔에 이벤트 로그 출력 여부
+    debugMode: false
   },
 
   profile: {

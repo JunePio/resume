@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>방문 로그 관리 콘솔 | 이준영 포트폴리오</title>
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://hangeul.pstatic.net/hangeul_static/css/maru-buri.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-topbar" role="banner">
+    <div class="admin-topbar-inner">
+      <div class="admin-brand">
+        <span class="admin-emblem" aria-hidden="true">✦</span>
+        <div>
+          <h1>방문 로그 관리 콘솔</h1>
+          <p class="admin-sub">이준영 포트폴리오 · 방문자 열람 타임라인 &amp; 지원처 추적</p>
+        </div>
+        <span id="admin-mode-badge" class="mode-pill is-local">로컬 미리보기</span>
+      </div>
+
+      <div class="admin-top-actions">
+        <label class="ignore-switch" title="켜면 현재 브라우저에서 포트폴리오를 열어 테스트해도 방문 로그에 남지 않습니다">
+          <input type="checkbox" id="ignore-device-toggle">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span class="switch-label">내 기기 접속 기록 제외</span>
+        </label>
+
+        <button type="button" id="toggle-auth-panel-btn" class="btn-outline-sm">API 연결 설정</button>
+        <button type="button" id="refresh-btn" class="btn-solid-sm">새로고침 ↻</button>
+        <a href="index.html" target="_blank" rel="noopener" class="btn-ghost-sm">포트폴리오 열기 ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <!-- 원격 Worker API 연결 & 인증 패널 -->
+    <section id="auth-panel" class="admin-card auth-card" aria-label="관리자 API 연결 및 인증">
+      <div class="card-head-row">
+        <div>
+          <span class="mono-badge">CLOUDFLARE WORKERS + D1 CONNECTION</span>
+          <h2>원격 로그 DB 연결 및 관리자 인증</h2>
+          <p class="card-desc">
+            Cloudflare Worker 배포 URL과 <code>ADMIN_TOKEN</code>을 입력하면 전 세계 방문자의 열람 로그를 실시간으로 조회·관리할 수 있습니다.
+            아직 Worker를 배포하기 전이라면 <strong>로컬 브라우저 미러 모드</strong>로 바로 동작을 확인할 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <form id="auth-form" class="auth-form-grid">
+        <label class="field-group">
+          <span>Cloudflare Worker URL</span>
+          <input
+            type="url"
+            id="api-url-input"
+            placeholder="https://resume-visitor-logger.your-name.workers.dev"
+            autocomplete="url"
+          >
+        </label>
+
+        <label class="field-group">
+          <span>관리자 토큰 (ADMIN_TOKEN)</span>
+          <input
+            type="password"
+            id="admin-token-input"
+            placeholder="wrangler secret put ADMIN_TOKEN 으로 등록한 토큰"
+            autocomplete="current-password"
+          >
+        </label>
+
+        <div class="auth-actions-row">
+          <label class="remember-check">
+            <input type="checkbox" id="remember-token-chk">
+            <span>이 브라우저에 토큰 기억하기 (개인 PC 전용)</span>
+          </label>
+
+          <div class="auth-btns">
+            <button type="submit" id="connect-remote-btn" class="btn-solid">원격 DB 연결하기</button>
+            <button type="button" id="use-local-btn" class="btn-outline">로컬 브라우저 미러로 보기</button>
+          </div>
+        </div>
+      </form>
+      <p id="auth-status-msg" class="auth-status-msg" role="status"></p>
+    </section>
+
+    <!-- 핵심 요약 KPI 6종 -->
+    <section class="kpi-grid" aria-label="방문자 열람 요약 지표">
+      <article class="kpi-card">
+        <span class="kpi-label">총 방문 세션</span>
+        <strong id="kpi-sessions" class="kpi-value mono-num">0</strong>
+        <span class="kpi-sub">필터 조건 기준</span>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">고유 방문자</span>
+        <strong id="kpi-visitors" class="kpi-value mono-num">0</strong>
+        <span class="kpi-sub">익명 브라우저 ID</span>
+      </article>
+      <article class="kpi-card is-accent">
+        <span class="kpi-label">이력서 열람</span>
+        <strong id="kpi-resume" class="kpi-value mono-num">0건</strong>
+        <span id="kpi-resume-sub" class="kpi-sub">평균 진행률 0%</span>
+      </article>
+      <article class="kpi-card is-accent">
+        <span class="kpi-label">자기소개서 열람</span>
+        <strong id="kpi-cover" class="kpi-value mono-num">0건</strong>
+        <span id="kpi-cover-sub" class="kpi-sub">평균 진행률 0%</span>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">QA 산출물 열람</span>
+        <strong id="kpi-qa" class="kpi-value mono-num">0건</strong>
+        <span class="kpi-sub">219 TC · 엑셀 포함</span>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">평균 체류시간</span>
+        <strong id="kpi-duration" class="kpi-value mono-num">0초</strong>
+        <span class="kpi-sub">이탈 시점 기준</span>
+      </article>
+    </section>
+
+    <!-- 지원 회사별 전용 추적 링크 생성기 & 회사별 유입 현황 -->
+    <section class="admin-card ref-builder-card" aria-label="지원처 전용 추적 링크 생성기">
+      <div class="card-head-row">
+        <div>
+          <span class="mono-badge">RECRUITER LINK BUILDER (?ref=)</span>
+          <h2>지원 회사별 전용 추적 링크 생성기</h2>
+          <p class="card-desc">
+            이력서·지원서에 회사별 코드(예: <code>naver</code>, <code>kakao_qa</code>)를 붙인 URL을 전달하면, 해당 기업 담당자가 들어와 무엇을 읽었는지 아래 목록에서 한눈에 구분해 볼 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="ref-inputs-grid">
+        <label class="field-group">
+          <span>포트폴리오 기본 URL</span>
+          <input type="url" id="ref-base-url" placeholder="https://junepio.github.io/resume/">
+        </label>
+        <label class="field-group">
+          <span>지원 회사 / 식별 코드 (ref)</span>
+          <input type="text" id="ref-code-input" placeholder="예: naver_qa 또는 toss">
+        </label>
+        <label class="field-group">
+          <span>지원 플랫폼 (utm_source, 선택)</span>
+          <input type="text" id="ref-utm-input" placeholder="예: wanted, remember, email">
+        </label>
+      </div>
+
+      <div class="ref-output-row">
+        <code id="ref-preview-url" class="ref-preview-url">https://junepio.github.io/resume/</code>
+        <button type="button" id="ref-copy-btn" class="btn-solid-sm">추적 링크 복사</button>
+      </div>
+
+      <div class="ref-chips-wrap">
+        <span class="ref-chips-label">유입 기업(ref) 빠른 필터:</span>
+        <div id="ref-chips-bar" class="ref-chips-bar"></div>
+      </div>
+    </section>
+
+    <!-- 필터 · 일괄 삭제 · CSV/JSON 백업 툴바 -->
+    <section class="admin-card toolbar-card" aria-label="로그 필터 및 일괄 관리">
+      <div class="toolbar-row">
+        <div class="toolbar-filters">
+          <select id="filter-days" class="admin-select" aria-label="조회 기간">
+            <option value="all">전체 기간</option>
+            <option value="1">최근 24시간</option>
+            <option value="7">최근 7일</option>
+            <option value="30">최근 30일</option>
+          </select>
+
+          <select id="filter-activity" class="admin-select" aria-label="열람 항목 필터">
+            <option value="all">전체 활동</option>
+            <option value="resume">이력서 열람함</option>
+            <option value="cover">자기소개서 열람함</option>
+            <option value="qa">QA 뷰어 열람함</option>
+            <option value="starred">★ 중요 표시만</option>
+          </select>
+
+          <input
+            type="search"
+            id="filter-search"
+            class="admin-search"
+            placeholder="회사코드(ref), 유입경로, 메모, 기기 검색..."
+            aria-label="세션 검색"
+          >
+        </div>
+
+        <div class="toolbar-actions">
+          <label class="select-all-label">
+            <input type="checkbox" id="select-all-chk">
+            <span>전체 선택</span>
+          </label>
+          <button type="button" id="delete-selected-btn" class="btn-danger-sm" disabled>선택 삭제 (0)</button>
+          <button type="button" id="delete-all-btn" class="btn-danger-outline-sm">전체 초기화</button>
+          <button type="button" id="export-csv-btn" class="btn-outline-sm">CSV 다운로드</button>
+          <button type="button" id="export-json-btn" class="btn-outline-sm">JSON 백업</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 방문 세션 & 타임라인 목록 -->
+    <section class="sessions-section" aria-label="방문 세션 목록">
+      <div class="sessions-head">
+        <h2>방문자 세션 &amp; 상세 열람 타임라인</h2>
+        <span id="sessions-count-label" class="mono-num sessions-count">0건 표시</span>
+      </div>
+      <div id="sessions-list" class="sessions-list"></div>
+    </section>
+  </main>
+
+  <div id="admin-toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -162,10 +162,114 @@
     return legacyCopySync(text) ? Promise.resolve() : Promise.reject(new Error('copy failed'));
   }
 
-  // ---- Analytics & UTM / Referrer Attribution ----
+  // ---- Safe LocalStorage & Visitor Telemetry ----
   const ATTRIBUTION_KEY = 'portfolio_attribution';
+  const IGNORE_TRACKING_KEY = 'portfolio_ignore_tracking';
+  const VISITOR_ID_KEY = 'portfolio_visitor_id';
+  const SESSION_ID_KEY = 'portfolio_session_id';
+  const LOCAL_MIRROR_KEY = 'portfolio_local_telemetry_v1';
   const TRACKED_EVENTS_LOG = [];
   window.__PORTFOLIO_TRACKED_EVENTS = TRACKED_EVENTS_LOG;
+
+  function safeLocalGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return Object.prototype.hasOwnProperty.call(memoryStorage, key) ? memoryStorage[key] : null;
+    }
+  }
+
+  function safeLocalSet(key, val) {
+    memoryStorage[key] = String(val);
+    try {
+      window.localStorage.setItem(key, String(val));
+    } catch (e) {
+      // file:// 또는 프라이빗 모드 fallback 무시
+    }
+  }
+
+  function safeLocalRemove(key) {
+    delete memoryStorage[key];
+    try {
+      window.localStorage.removeItem(key);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function generateRandomId(prefix) {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return prefix + '_' + window.crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+    }
+    return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+
+  function getOrCreateVisitorId() {
+    let vid = safeLocalGet(VISITOR_ID_KEY);
+    if (!vid) {
+      vid = generateRandomId('v');
+      safeLocalSet(VISITOR_ID_KEY, vid);
+    }
+    return vid;
+  }
+
+  function getOrCreateSessionId() {
+    let sid = safeSessionGet(SESSION_ID_KEY);
+    if (!sid) {
+      sid = generateRandomId('s');
+      safeSessionSet(SESSION_ID_KEY, sid);
+    }
+    return sid;
+  }
+
+  function isTrackingIgnored() {
+    return safeLocalGet(IGNORE_TRACKING_KEY) === 'true';
+  }
+
+  function applyIgnoreQueryFlag() {
+    const params = new URLSearchParams(window.location.search || '');
+    const flag = params.get('ignore_me');
+    if (flag === '1' || flag === 'true') {
+      safeLocalSet(IGNORE_TRACKING_KEY, 'true');
+      showToast('내 기기 제외가 활성화되었습니다. 이 브라우저의 방문은 기록되지 않습니다.');
+    } else if (flag === '0' || flag === 'false') {
+      safeLocalRemove(IGNORE_TRACKING_KEY);
+      showToast('내 기기 제외가 해제되었습니다.');
+    }
+  }
+
+  function detectClientEnv() {
+    const ua = navigator.userAgent || '';
+    let deviceType = 'Desktop';
+    if (/iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua))) {
+      deviceType = 'Tablet';
+    } else if (/Mobi|Android|iPhone|iPod/i.test(ua)) {
+      deviceType = 'Mobile';
+    }
+
+    let os = 'Other OS';
+    if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+    else if (/Android/i.test(ua)) os = 'Android';
+    else if (/Mac OS X|Macintosh/i.test(ua)) os = 'macOS';
+    else if (/Windows/i.test(ua)) os = 'Windows';
+    else if (/Linux/i.test(ua)) os = 'Linux';
+
+    let browser = 'Browser';
+    if (/Edg\//i.test(ua)) browser = 'Edge';
+    else if (/Whale\//i.test(ua)) browser = 'Whale';
+    else if (/SamsungBrowser/i.test(ua)) browser = 'Samsung';
+    else if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) browser = 'Chrome';
+    else if (/Firefox\//i.test(ua)) browser = 'Firefox';
+    else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+
+    const w = window.screen && window.screen.width ? window.screen.width : window.innerWidth;
+    const h = window.screen && window.screen.height ? window.screen.height : window.innerHeight;
+    return {
+      deviceType: deviceType,
+      osBrowser: os + ' · ' + browser,
+      screenSize: w + '×' + h
+    };
+  }
 
   function captureAttribution() {
     let saved = {};
@@ -199,6 +303,222 @@
   }
 
   const attribution = captureAttribution();
+  const clientEnv = detectClientEnv();
+
+  const telemetry = {
+    visitorId: getOrCreateVisitorId(),
+    sessionId: getOrCreateSessionId(),
+    startedAt: new Date().toISOString(),
+    startedMs: Date.now(),
+    maxResumePct: 0,
+    currentResumeMaxPct: 0,
+    resumeOpenedAtMs: 0,
+    maxCoverPct: 0,
+    currentCoverMaxPct: 0,
+    coverOpenedAtMs: 0,
+    currentNovelMaxPct: 0,
+    novelOpenedAtMs: 0,
+    openedResume: 0,
+    openedCover: 0,
+    openedQa: 0,
+    queue: [],
+    flushTimer: null,
+    lastLeaveSentMs: 0
+  };
+
+  function getLogApiUrl() {
+    if (typeof window.__PORTFOLIO_LOG_API_OVERRIDE__ === 'string' && window.__PORTFOLIO_LOG_API_OVERRIDE__.trim()) {
+      return window.__PORTFOLIO_LOG_API_OVERRIDE__.trim().replace(/\/+$/, '');
+    }
+    const cfg = DATA.analyticsConfig || {};
+    return cfg.logApiUrl && typeof cfg.logApiUrl === 'string' ? cfg.logApiUrl.trim().replace(/\/+$/, '') : '';
+  }
+
+  function formatEventLabel(eventName, params) {
+    const p = params || {};
+    switch (eventName) {
+      case 'page_view':
+        return '포트폴리오 사이트 진입';
+      case 'ignite_candle':
+        return '촛불 점화: ' + (p.candle_title || '제' + (p.candle_id || '') + '초');
+      case 'light_all_candles':
+        return '5개 모든 촛불 켜기';
+      case 'open_resume':
+        return '공식 웹 이력서 열람 (' + (p.source || 'direct') + ')';
+      case 'complete_resume_read':
+        return '공식 이력서 90%+ 완독';
+      case 'close_resume':
+        return '공식 이력서 닫기 (진행률 ' + (p.max_progress_percent || 0) + '%, ' + (p.read_sec || 0) + '초)';
+      case 'open_cover_letter':
+        return '자기소개서 열람 (' + (p.source || 'direct') + ')';
+      case 'complete_cover_letter_read':
+        return '자기소개서 90%+ 완독';
+      case 'close_cover_letter':
+        return '자기소개서 닫기 (진행률 ' + (p.max_progress_percent || 0) + '%, ' + (p.read_sec || 0) + '초)';
+      case 'open_qa_portfolio':
+        if (String(p.source || '').indexOf('xlsx') !== -1) return 'QA 원본 Excel 다운로드';
+        return 'QA 산출물 뷰어 열람 (' + (p.sheet || 'view') + ')';
+      case 'switch_qa_sheet':
+        return 'QA 시트 탭 전환: ' + (p.sheet || '');
+      case 'play_video':
+        return '영상 재생: ' + (p.video_title || p.youtube_id || '');
+      case 'read_novel':
+        return '창작 원고 읽기: ' + (p.novel_title || '');
+      case 'complete_novel_read':
+        return '창작 원고 완독: ' + (p.novel_title || '');
+      case 'close_novel':
+        return '창작 원고 닫기: ' + (p.novel_title || '') + ' (' + (p.max_progress_percent || 0) + '%)';
+      case 'copy_contact_email':
+        return '이메일 주소 복사';
+      case 'click_linkedin_profile':
+        return 'LinkedIn 프로필 클릭';
+      case 'click_app_landing':
+        return '상용 앱 사이트 이동: ' + (p.app_name || '');
+      case 'click_app_store':
+        return 'App Store 이동: ' + (p.app_name || '');
+      case 'visit_youtube_channel':
+        return 'YouTube 채널 방문';
+      case 'toggle_ambient_sound':
+        return '밤숲 사운드 ' + (p.enabled ? 'On' : 'Off');
+      case 'page_leave':
+        return '사이트 이탈 (체류 ' + (p.duration_sec || 0) + '초)';
+      default:
+        return eventName;
+    }
+  }
+
+  function buildSessionSnapshot(nowIso) {
+    const litArr = typeof state !== 'undefined' && state.litCandles ? Array.from(state.litCandles).sort(function (a, b) { return a - b; }) : [];
+    const durationSec = Math.max(0, Math.round((Date.now() - telemetry.startedMs) / 1000));
+    return {
+      session_id: telemetry.sessionId,
+      visitor_id: telemetry.visitorId,
+      started_at: telemetry.startedAt,
+      last_seen_at: nowIso || new Date().toISOString(),
+      duration_sec: durationSec,
+      ref_tag: attribution.ref || '',
+      utm_source: attribution.utm_source || '',
+      utm_medium: attribution.utm_medium || '',
+      utm_campaign: attribution.utm_campaign || '',
+      referrer: attribution.referrer || '',
+      device_type: clientEnv.deviceType,
+      os_browser: clientEnv.osBrowser,
+      screen_size: clientEnv.screenSize,
+      country: 'LOCAL',
+      max_resume_pct: telemetry.maxResumePct,
+      max_cover_pct: telemetry.maxCoverPct,
+      opened_resume: telemetry.openedResume,
+      opened_cover: telemetry.openedCover,
+      opened_qa: telemetry.openedQa,
+      lit_candles: litArr
+    };
+  }
+
+  function saveEventToLocalMirror(sessionSnap, eventEntry) {
+    const cfg = DATA.analyticsConfig || {};
+    if (cfg.enableLocalMirror === false) return;
+    try {
+      const raw = safeLocalGet(LOCAL_MIRROR_KEY);
+      const store = raw ? JSON.parse(raw) : { sessions: [], eventsBySession: {} };
+      if (!Array.isArray(store.sessions)) store.sessions = [];
+      if (!store.eventsBySession || typeof store.eventsBySession !== 'object') store.eventsBySession = {};
+
+      let existing = store.sessions.find(function (s) {
+        return s.session_id === sessionSnap.session_id;
+      });
+      if (!existing) {
+        existing = Object.assign({}, sessionSnap, {
+          lit_candles: JSON.stringify(sessionSnap.lit_candles || []),
+          event_count: 0,
+          memo: '',
+          is_starred: 0
+        });
+        store.sessions.unshift(existing);
+      } else {
+        existing.last_seen_at = sessionSnap.last_seen_at;
+        existing.duration_sec = Math.max(existing.duration_sec || 0, sessionSnap.duration_sec || 0);
+        existing.max_resume_pct = Math.max(existing.max_resume_pct || 0, sessionSnap.max_resume_pct || 0);
+        existing.max_cover_pct = Math.max(existing.max_cover_pct || 0, sessionSnap.max_cover_pct || 0);
+        existing.opened_resume = Math.max(existing.opened_resume || 0, sessionSnap.opened_resume || 0);
+        existing.opened_cover = Math.max(existing.opened_cover || 0, sessionSnap.opened_cover || 0);
+        existing.opened_qa = Math.max(existing.opened_qa || 0, sessionSnap.opened_qa || 0);
+        existing.lit_candles = JSON.stringify(sessionSnap.lit_candles || []);
+      }
+
+      const evList = store.eventsBySession[sessionSnap.session_id] || [];
+      evList.push({
+        id: evList.length + 1,
+        session_id: sessionSnap.session_id,
+        created_at: eventEntry.created_at,
+        event_name: eventEntry.event_name,
+        event_label: eventEntry.event_label,
+        meta_json: JSON.stringify(eventEntry.meta || {})
+      });
+      store.eventsBySession[sessionSnap.session_id] = evList;
+      existing.event_count = evList.length;
+
+      // 최근 100개 세션만 유지
+      if (store.sessions.length > 100) {
+        const removed = store.sessions.slice(100);
+        store.sessions = store.sessions.slice(0, 100);
+        removed.forEach(function (r) {
+          delete store.eventsBySession[r.session_id];
+        });
+      }
+
+      safeLocalSet(LOCAL_MIRROR_KEY, JSON.stringify(store));
+    } catch (e) {
+      // localStorage 저장 실패는 무시
+    }
+  }
+
+  function flushTelemetryQueue(useBeacon) {
+    if (telemetry.flushTimer) {
+      clearTimeout(telemetry.flushTimer);
+      telemetry.flushTimer = null;
+    }
+    const apiUrl = getLogApiUrl();
+    if (!apiUrl || isTrackingIgnored() || telemetry.queue.length === 0) {
+      return;
+    }
+
+    const eventsBatch = telemetry.queue.splice(0, 25);
+    const bodyStr = JSON.stringify({
+      session: buildSessionSnapshot(),
+      events: eventsBatch
+    });
+    const endpoint = apiUrl + '/api/collect';
+
+    if (useBeacon && navigator && typeof navigator.sendBeacon === 'function') {
+      try {
+        const sent = navigator.sendBeacon(endpoint, bodyStr);
+        if (sent) return;
+      } catch (e) {
+        // fallback to fetch below
+      }
+    }
+
+    if (typeof window.fetch === 'function') {
+      try {
+        window
+          .fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+            body: bodyStr,
+            keepalive: true
+          })
+          .catch(function () {
+            // 텔레메트리 전송 실패는 사용자 경험에 영향을 주지 않도록 조용히 무시
+          });
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+
+  window.__PORTFOLIO_FLUSH_LOGS__ = function () {
+    flushTelemetryQueue(false);
+  };
 
   function initAnalyticsProviders() {
     const cfg = DATA.analyticsConfig || {};
@@ -228,10 +548,11 @@
 
   function trackEvent(eventName, eventParams) {
     const payload = Object.assign({}, attribution, eventParams || {});
+    const nowIso = new Date().toISOString();
     const record = {
       event: eventName,
       params: payload,
-      timestamp: new Date().toISOString()
+      timestamp: nowIso
     };
     TRACKED_EVENTS_LOG.push(record);
 
@@ -241,6 +562,35 @@
 
     if (DATA.analyticsConfig && DATA.analyticsConfig.debugMode) {
       console.info('[Analytics Event]', eventName, payload);
+    }
+
+    if (isTrackingIgnored()) return;
+
+    if (eventName === 'open_resume') telemetry.openedResume = 1;
+    else if (eventName === 'open_cover_letter') telemetry.openedCover = 1;
+    else if (eventName === 'open_qa_portfolio') telemetry.openedQa = 1;
+
+    const eventEntry = {
+      created_at: nowIso,
+      event_name: eventName,
+      event_label: formatEventLabel(eventName, eventParams || {}),
+      meta: eventParams || {}
+    };
+
+    const snap = buildSessionSnapshot(nowIso);
+    saveEventToLocalMirror(snap, eventEntry);
+
+    if (getLogApiUrl()) {
+      telemetry.queue.push(eventEntry);
+      if (eventName === 'page_leave') {
+        flushTelemetryQueue(true);
+      } else if (telemetry.queue.length >= 8) {
+        flushTelemetryQueue(false);
+      } else if (!telemetry.flushTimer) {
+        telemetry.flushTimer = setTimeout(function () {
+          flushTelemetryQueue(false);
+        }, 700);
+      }
     }
   }
 
@@ -1745,6 +2095,7 @@
 
     if (dom.ebookProgressBar) dom.ebookProgressBar.style.width = pct + '%';
     if (dom.ebookProgressText) dom.ebookProgressText.textContent = pct + '%';
+    if (pct > telemetry.currentNovelMaxPct) telemetry.currentNovelMaxPct = pct;
 
     if (pct >= 90 && !state.completedNovels.has(state.activeNovelId)) {
       state.completedNovels.add(state.activeNovelId);
@@ -1767,6 +2118,8 @@
 
     state.lastTriggerEl = document.activeElement;
     state.activeNovelId = novel.id;
+    telemetry.currentNovelMaxPct = 0;
+    telemetry.novelOpenedAtMs = Date.now();
 
     if (SOUND) {
       SOUND.playPaperRustle();
@@ -1805,6 +2158,17 @@
     if (!dom.ebookModal || dom.ebookModal.hidden) return;
     if (SOUND) {
       SOUND.playPaperRustle();
+    }
+    const closingNovelId = state.activeNovelId;
+    const closingNovel = NOVELS.find(function (n) {
+      return n.id === closingNovelId;
+    });
+    if (closingNovelId) {
+      trackEvent('close_novel', {
+        novel_id: closingNovelId,
+        novel_title: closingNovel ? closingNovel.title : '',
+        max_progress_percent: telemetry.currentNovelMaxPct
+      });
     }
     dom.ebookModal.hidden = true;
     state.activeNovelId = null;
@@ -2383,6 +2747,8 @@
 
     if (dom.clProgressBar) dom.clProgressBar.style.width = pct + '%';
     if (dom.clProgressText) dom.clProgressText.textContent = pct + '%';
+    if (pct > telemetry.currentCoverMaxPct) telemetry.currentCoverMaxPct = pct;
+    if (pct > telemetry.maxCoverPct) telemetry.maxCoverPct = pct;
 
     const sections = el.querySelectorAll('.cl-chapter-section');
     if (sections.length && Date.now() > state.clTocLockUntil) {
@@ -2412,6 +2778,8 @@
     if (!DATA.coverLetter || !dom.clModal) return;
     renderCoverLetterModal();
     state.lastTriggerEl = document.activeElement;
+    telemetry.currentCoverMaxPct = 0;
+    telemetry.coverOpenedAtMs = Date.now();
 
     applyCoverLetterPreferences();
     dom.clModal.hidden = false;
@@ -2444,6 +2812,13 @@
   function closeCoverLetterModal(skipFocusRestore) {
     if (!dom.clModal || dom.clModal.hidden) return;
     if (SOUND) SOUND.playSoftClick();
+    const readSec = telemetry.coverOpenedAtMs
+      ? Math.max(0, Math.round((Date.now() - telemetry.coverOpenedAtMs) / 1000))
+      : 0;
+    trackEvent('close_cover_letter', {
+      max_progress_percent: telemetry.currentCoverMaxPct,
+      read_sec: readSec
+    });
     dom.clModal.hidden = true;
     syncModalBodyLock();
     if (!skipFocusRestore && state.lastTriggerEl && typeof state.lastTriggerEl.focus === 'function') {
@@ -2844,6 +3219,8 @@
 
     if (dom.rmProgressBar) dom.rmProgressBar.style.width = pct + '%';
     if (dom.rmProgressText) dom.rmProgressText.textContent = pct + '%';
+    if (pct > telemetry.currentResumeMaxPct) telemetry.currentResumeMaxPct = pct;
+    if (pct > telemetry.maxResumePct) telemetry.maxResumePct = pct;
 
     const sections = el.querySelectorAll('.cl-chapter-section');
     if (sections.length && Date.now() > state.rmTocLockUntil) {
@@ -2873,6 +3250,8 @@
     if (!DATA.resumeData || !dom.rmModal) return;
     renderResumeModal();
     state.lastTriggerEl = document.activeElement;
+    telemetry.currentResumeMaxPct = 0;
+    telemetry.resumeOpenedAtMs = Date.now();
 
     applyResumePreferences();
     dom.rmModal.hidden = false;
@@ -2905,6 +3284,13 @@
   function closeResumeModal(skipFocusRestore) {
     if (!dom.rmModal || dom.rmModal.hidden) return;
     if (SOUND) SOUND.playSoftClick();
+    const readSec = telemetry.resumeOpenedAtMs
+      ? Math.max(0, Math.round((Date.now() - telemetry.resumeOpenedAtMs) / 1000))
+      : 0;
+    trackEvent('close_resume', {
+      max_progress_percent: telemetry.currentResumeMaxPct,
+      read_sec: readSec
+    });
     dom.rmModal.hidden = true;
     syncModalBodyLock();
     if (!skipFocusRestore && state.lastTriggerEl && typeof state.lastTriggerEl.focus === 'function') {
@@ -2998,6 +3384,7 @@
         renderQaWorkbookBody();
         if (dom.qaModalBody) dom.qaModalBody.scrollTop = 0;
         if (SOUND) SOUND.playPaperRustle();
+        trackEvent('switch_qa_sheet', { sheet: state.qaSheet });
       });
     }
     if (dom.qaSearchInput) {
@@ -3517,6 +3904,7 @@
 
   // ---- Boot ----
   initAnalyticsProviders();
+  applyIgnoreQueryFlag();
   hydrateChrome();
   renderCandles();
   initSoundControls();
@@ -3524,4 +3912,21 @@
   syncCandleVisuals();
   renderShowcase();
   initForestAtmosphere();
+
+  trackEvent('page_view', { path: window.location.pathname || '/' });
+
+  function handlePageExitBeacon() {
+    const now = Date.now();
+    if (now - telemetry.lastLeaveSentMs < 3000) return;
+    telemetry.lastLeaveSentMs = now;
+    const durationSec = Math.max(0, Math.round((now - telemetry.startedMs) / 1000));
+    trackEvent('page_leave', { duration_sec: durationSec });
+  }
+
+  window.addEventListener('pagehide', handlePageExitBeacon);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      handlePageExitBeacon();
+    }
+  });
 })();

@@ -6,3 +6,10 @@
 1인포즈픽 설명이미지2.png
 유머터지는날(운수좋은날 각색)-이준영.pdf
 태양을 향해 날다_이준영.hwp
+
+# Cloudflare Workers 로컬 개발 캐시 및 시크릿
+.wrangler/
+.dev.vars
+cloudflare-worker/.wrangler/
+cloudflare-worker/.dev.vars
+cloudflare-worker/node_modules/
