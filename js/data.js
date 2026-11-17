@@ -37,9 +37,9 @@ window.PORTFOLIO_DATA = {
     email: 'younghwen@naver.com',
     linkedinUrl: 'https://www.linkedin.com/in/younghwen/',
     linkedinLabel: 'linkedin.com/in/younghwen',
-    // 워크스페이스 루트에 위치한 실제 파일명 (런타임에서 NFC 정규화 + encodeURI 적용)
-    resumePdf: '이준영_고용24_이력서.pdf',
-    coverLetterPdf: '이준영_고용24_자기소개서.pdf',
+    // 워크스페이스 루트에 위치한 프로필 이미지 파일명 (런타임에서 NFD/NFC 양방향 폴백 처리)
+    cardProfilePhoto: '커피잔프로필사진.png',
+    resumePhoto: '프로필.jpg',
     keywords: [
       '#iOS_Product_Maker',
       '#Swift_Vision_CoreML',
@@ -77,8 +77,8 @@ window.PORTFOLIO_DATA = {
       id: 1,
       numeral: '제1초',
       title: '기록과 증명',
-      subtitle: 'Profile & PDF',
-      tooltip: '프로필 요약 · 올라운더 역량 · 이력서 & 자기소개서 PDF',
+      subtitle: 'Profile & Docs',
+      tooltip: '프로필 요약 · 올라운더 역량 · 웹 이력서 & 자기소개서',
       panelEyebrow: 'CANDLE I · PROFILE & CREDENTIALS',
       panelTitle: '기록과 증명 — 올라운더 메이커의 이력'
     },
@@ -163,6 +163,362 @@ window.PORTFOLIO_DATA = {
       'GTQ(그래픽기술자격) 1급 · GTQi(일러스트) 2급 — 한국생산성본부 (2024)',
       '정보처리기능사 · 정보기기운용기능사 — 한국산업인력공단',
       '컴퓨터활용능력 2급 · 워드프로세서 — 대한상공회의소'
+    ]
+  },
+
+  // 웹페이지 내 전용 모달로 바로 볼 수 있는 공식 이력서 데이터
+  // TODO: 경력·학력·훈련·자격증 항목을 수정하면 공식 웹 이력서 모달에 즉시 반영됩니다.
+  resumeData: {
+    badge: 'OFFICIAL WEB RESUME',
+    title: '이준영 공식 이력서',
+    subtitle: '상용 iOS 프로덕트 메이커 · 4년+ 개발 및 서버 QC 실무 · 주도적 SW QA & 자동화',
+    header: {
+      name: '이준영',
+      englishName: 'Junyoung Lee',
+      role: 'iOS Developer · SW QA & Test Automation · Creator',
+      photo: '프로필.jpg',
+      email: 'younghwen@naver.com',
+      linkedinUrl: 'https://www.linkedin.com/in/younghwen/',
+      linkedinLabel: 'linkedin.com/in/younghwen',
+      links: [
+        { label: 'PosePik (posepik.com)', url: 'https://posepik.com' },
+        { label: 'Lumio (lumioapp.win)', url: 'https://lumioapp.win' },
+        { label: 'YouTube (@younghwen)', url: 'https://www.youtube.com/@younghwen' }
+      ],
+      metrics: [
+        { label: '실무 개발 · QC', value: '4년 1개월+' },
+        { label: '상용 iOS 앱', value: '2종 정식 출시' },
+        { label: 'QA · 테스트 자동화', value: '219 TC · Appium' },
+        { label: '자격 · 전문교육', value: '자격증 7종 · 10과정' }
+      ]
+    },
+    sections: [
+      { id: 'career', num: '01', tabLabel: '경력 · 프로덕트', title: '경력사항 및 상용 프로덕트 (실무 4년 1개월 + 메이킹)' },
+      { id: 'education', num: '02', tabLabel: '학력 · 대외활동', title: '학력사항 및 주요 대외·연구 활동' },
+      { id: 'training', num: '03', tabLabel: '직업훈련 (10)', title: '직업훈련 및 전문교육 이수이력' },
+      { id: 'certifications', num: '04', tabLabel: '자격증 · 역량', title: '보유 자격면허 및 핵심 기술 역량' }
+    ],
+    careers: [
+      {
+        category: '상용 프로덕트',
+        period: '현재 운영 중',
+        org: 'PosePik (포즈픽) & Lumio (루미오)',
+        position: '1인 프로덕트 메이커',
+        duties: '온디바이스 Vision·CoreML 실시간 카메라 포즈 가이드 무료 앱 PosePik 및 FSRS·온디바이스 OCR·WidgetKit·watchOS 플래시카드 앱 Lumio 기획·개발·실기기 QA·출시 운영',
+        stack: 'Swift · Vision · CoreML · AVFoundation · WidgetKit · watchOS'
+      },
+      {
+        category: 'AI · QA 프로젝트',
+        period: '2025.07 ~ 2025.12',
+        org: '구마야 산책가자 (NVIDIA AI Academy)',
+        position: 'QA 리드 · AI/지도 개발',
+        duties: '219개 테스트케이스(TC) 설계·27건 결함 관리·최종 품질 보고서(PASS 87.7%→93.2%) 주도, LLM 챗봇 RAG 구축, 플레이스 지도·마커 클러스터링 및 FastAPI+Appium 모바일 자동화 구현',
+        stack: 'SW QA · LLM RAG · FastAPI · Appium · Python'
+      },
+      {
+        category: '실무 경력',
+        period: '2021.12 ~ 2022.06',
+        org: '기업·개인 신용데이터 기업 (파견)',
+        position: 'CB개발부 · 매니저',
+        duties: '서버 리소스 QC — 파견사 서버 CPU·RAM 점유율 상시 모니터링 및 일별·주간·2주·월별 리소스 작업·보고, 데이터 추출 및 컴퓨팅 리소스 조회 기반 월별 보고서(Excel, PowerPoint) 작성',
+        stack: 'Linux Shell Script · Server QC · Excel · PowerPoint'
+      },
+      {
+        category: '실무 경력',
+        period: '2018.04 ~ 2018.07',
+        org: '클라우드 솔루션 개발사',
+        position: '대리',
+        duties: '클라우드 포털 대시보드 프론트엔드 및 서비스 연동 개발',
+        stack: 'React · Node.js'
+      },
+      {
+        category: '실무 경력',
+        period: '2017.10 ~ 2018.03',
+        org: '웹 · CMS 구축 에이전시',
+        position: '주임',
+        duties: '오름 홈페이지(CMS) 전면 리뉴얼 구축 및 프론트엔드 스크립트 구현',
+        stack: 'PHP · JavaScript · jQuery'
+      },
+      {
+        category: '실무 경력',
+        period: '2015.08 ~ 2016.01',
+        org: '공장 자동화 프로그램 개발사',
+        position: '기술개발2팀 · 사원',
+        duties: '공장 자동화 프로그램(육상자동출하시스템, 공정 리포트) 및 사내 전산 프로그램(재고관리·업무일지·유지보수관리) 개발·유지보수, 서버 복구 지원',
+        stack: 'C# · .NET · RDBMS'
+      },
+      {
+        category: '실무 경력',
+        period: '2014.07 ~ 2015.07',
+        org: '빅데이터 플랫폼 벤처기업',
+        position: '플랫폼개발팀 · 선임연구원',
+        duties: '빅데이터 플랫폼 프로젝트(‘라온 2.0’) 업그레이드 개발, 프론트엔드 및 공식 회사 홈페이지 개발·운영, 공모전·사업 기획서 작성',
+        stack: 'Front-End · Big Data Platform · Web'
+      },
+      {
+        category: '실무 경력',
+        period: '2012.10 ~ 2013.10',
+        org: '물류 · 자동화창고 시스템 개발사',
+        position: '시스템개발부 · 사원',
+        duties: '자동화창고·냉동창고·와이어하네스 창고 시스템 DB 설계, 커스터마이징 프로그래밍, 현장 설치 및 시운전',
+        stack: 'DB 설계 · System Programming'
+      }
+    ],
+    education: [
+      {
+        period: '2005.03 ~ 2012.02',
+        school: '남서울대학교',
+        major: '지구·지리학 / GIS공학과',
+        degree: '대학교(4년제) 졸업',
+        gpa: '3.44 / 4.5'
+      }
+    ],
+    activities: [
+      {
+        period: '2010.03 ~ 2010.11',
+        type: '연합동아리 · 공모전',
+        org: '대학생 연합 IT 벤처 동아리 SOPT · 충남테크노파크',
+        role: '6기 개발파트 · 청년CEO 500 창업공모전',
+        desc: 'SOPT 6기 개발파트 활동 및 IT 컨퍼런스·네트워킹 참여, 충남테크노파크 청년CEO 500 프로젝트 창업공모전 아이디어 선정 및 수행'
+      },
+      {
+        period: '2008.07 ~ 2008.09',
+        type: '교내 연구실',
+        org: '남서울대학교 지능형교통연구소',
+        role: '국가근로장학생',
+        desc: '학과장 교수님 연구 랩 하계 국가근로장학생으로 선발되어 석·박사 과정 대학원생 연구 및 보고서 작성 보조'
+      },
+      {
+        period: '2007.02 ~ 2011.09',
+        type: '리서치 · 실무보조',
+        org: '부동산경제연구소 (분당 소재)',
+        role: '기획서 보조 아르바이트',
+        desc: '학업과 병행하며 시장조사, 연구 자료 정리 및 기획·보고서 작성 보조 업무 수행'
+      }
+    ],
+    trainings: [
+      {
+        period: '2025.07 ~ 2025.12',
+        org: '한국표준협회',
+        course: '[엔비디아] NVIDIA AI Academy',
+        detail: 'AI 인공지능, 머신러닝, 딥러닝 및 실전 프로젝트 교육 수료'
+      },
+      {
+        period: '2024.08 ~ 2024.09',
+        org: '콘센트릭스서비스코리아 유한회사',
+        course: 'Avalon_iOS Wave132 (채용예정자 · 재직자 Nesting)',
+        detail: 'iOS 디바이스 생태계 및 IT 기술 지원 상담 전문 교육'
+      },
+      {
+        period: '2024.02 ~ 2024.07',
+        org: '이젠아카데미 DX교육센터',
+        course: 'V커머스, 브랜드 영상콘텐츠 편집제작',
+        detail: 'Premiere Pro, After Effects, Photoshop, Illustrator, 마케팅 및 영상 편집 교육'
+      },
+      {
+        period: '2023.08 ~ 2023.09',
+        org: '(재)이노베이션아카데미',
+        course: '42서울 10기 2차 1개월 집중교육과정',
+        detail: '자기주도·동료학습 기반 C 프로그래밍 및 알고리즘 집중 과정'
+      },
+      {
+        period: '2022.11 ~ 2022.12',
+        org: '한국직장인교육센터 평생교육원',
+        course: '빅데이터는 나의 친구_나도 빅데이터 전문가',
+        detail: '빅데이터 분석 기초 및 활용 교육'
+      },
+      {
+        period: '2014.10 ~ 2014.11',
+        org: '정보통신산업진흥원 (NIPA)',
+        course: 'Open API를 활용한 전자정부 빅데이터 분석 실무',
+        detail: '공공 Open API 데이터 연동 및 빅데이터 분석 실무'
+      },
+      {
+        period: '2014.09',
+        org: '대한상공회의소 서울기술교육센터',
+        course: '웹 접근성 이니셔티브를 적용한 인터랙션 디자인',
+        detail: '웹 접근성 표준(WAI) 기반 UI 인터랙션 설계'
+      },
+      {
+        period: '2014.08',
+        org: '블로터아카데미',
+        course: '워드프레스 웹 제작 실무',
+        detail: '워드프레스 CMS 기반 웹사이트 제작 실무'
+      },
+      {
+        period: '2014.03 ~ 2014.07',
+        org: '국제인재개발원',
+        course: '사물인터넷(IoT) 과정 (JAVA, C)',
+        detail: 'Java, C 프로그래밍 및 사물인터넷 시스템 기초'
+      },
+      {
+        period: '2013.05',
+        org: '마이평생교육원',
+        course: '스피치전문가반 과정',
+        detail: '프레젠테이션 전달력 및 커뮤니케이션 집중 교육 (4일 과정)'
+      }
+    ],
+    certifications: [
+      { name: 'GTQ(그래픽기술자격) 1급', issuer: '한국생산성본부', date: '2024.04.05' },
+      { name: 'GTQi(그래픽기술자격 일러스트) 2급', issuer: '한국생산성본부', date: '2024.05.05' },
+      { name: '자동차운전면허 1종보통', issuer: '경기남부경찰청', date: '2012.12.03' },
+      { name: '워드프로세서', issuer: '대한상공회의소', date: '2002.12.01' },
+      { name: '정보기기운용기능사', issuer: '한국산업인력공단', date: '2000.08.01' },
+      { name: '정보처리기능사', issuer: '한국산업인력공단', date: '1999.08.06' },
+      { name: '컴퓨터활용능력 2급', issuer: '대한상공회의소', date: '1999.08.06' }
+    ],
+    skillGroups: [
+      {
+        group: 'iOS · Mobile Product',
+        items: 'Swift, Vision Framework, CoreML, AVFoundation, FSRS 알고리즘, On-Device OCR, WidgetKit, watchOS'
+      },
+      {
+        group: 'SW QA · Test Automation',
+        items: '테스트케이스(TC) 설계, 결함 리포팅 및 품질 결과 보고서, FastAPI + Appium + Android SDK 모바일 UI 자동화, Linux Shell 서버 리소스 QC'
+      },
+      {
+        group: 'Web · System · AI',
+        items: 'React, Node.js, JavaScript, jQuery, PHP, Python, LLM RAG, C#, RDBMS 설계'
+      },
+      {
+        group: 'Media · Office 활용능력',
+        items: 'Premiere Pro, After Effects, Photoshop(GTQ 1급), Illustrator(GTQi 2급), 문서작성(워드프로세서), 표계산(Excel 데이터 추출·정량 분석), 프레젠테이션(PowerPoint 보고서)'
+      }
+    ]
+  },
+
+  // 웹페이지 내 전용 모달로 바로 읽을 수 있는 자기소개서 데이터
+  // TODO: 각 챕터의 문단(paragraphs)이나 경력 상세(careerItems)를 수정하면 즉시 모달에 반영됩니다.
+  coverLetter: {
+    badge: 'COVER LETTER · 5 CHAPTERS',
+    title: '이준영 자기소개서',
+    subtitle: '긍정과 성실함으로 문제를 정의하고, 구현과 QA 검증으로 끝까지 완주하는 메이커',
+    highlights: [
+      { label: '핵심 정체성', value: 'iOS 메이커 · SW QA' },
+      { label: '실무 및 프로덕트', value: '4년+ 경력 · 상용 앱 2종' },
+      { label: '검증 및 자동화', value: '219 TC · Appium 자동화' }
+    ],
+    sections: [
+      {
+        id: 'personality',
+        num: '01',
+        tabLabel: '성격 · 태도',
+        title: '성격의 장단점과 컨디션 루틴',
+        lead: '긍정적인 시선으로 해결책을 찾고, 섬세한 감각을 품질 검증의 강점으로 바꾸며 꾸준한 루틴으로 지속 가능성을 지킵니다.',
+        paragraphs: [
+          '제 성격의 가장 큰 장점은 긍정적인 사고입니다. 예상치 못한 문제나 낯선 환경에서도 당황하기보다 그 안에서 배울 수 있는 점과 해결의 실마리를 먼저 바라보려 합니다.',
+          '반면 섬세하고 예민한 감성을 지니고 있습니다. 사용자 경험의 미세한 어색함이나 예외 케이스를 잡아내는 개발·QA 검증과 창작 작업에서는 큰 강점이 되지만, 때로 신경을 깊이 쓰다 보면 피로가 쉽게 쌓이기도 합니다. 이를 스스로 잘 알고 있기에 평소 산책과 운동으로 체력을 기르고, 일정한 일과 루틴을 유지하며 컨디션을 체계적으로 관리하고 있습니다.'
+        ]
+      },
+      {
+        id: 'values',
+        num: '02',
+        tabLabel: '가치관 · 도약',
+        title: '가치관과 끊임없는 셀프 테스트',
+        lead: '공백의 시간을 성찰과 학습 루틴으로 채우고, 배운 기술을 실제 상용 프로덕트 출시까지 연결해 스스로 가능성을 증명했습니다.',
+        paragraphs: [
+          '코로나 이후 뜻하지 않은 경력 공백기와 이전에 겪어보지 못한 여러 스트레스가 겹치며 긴 인내의 시간을 지나온 적이 있습니다. 쉽지 않은 시기였지만 다시 사회와 현업에서 제 몫을 다하기 위해 스스로를 깊이 돌아보고 삶의 태도를 단단히 다지는 성찰의 시간으로 삼고자 노력했습니다.',
+          '소프트웨어 엔지니어와 메이커는 끊임없이 새로운 기술을 배우고 검증해야 하는 직무이기에, 행동과 완주로 제 가능성을 직접 셀프 테스트했습니다. 42서울 집중교육과정과 V커머스·브랜드 영상편집 과정(GTQ 1급·GTQi 2급 취득), Avalon_iOS 기술 지원 교육을 거쳐, 한국표준협회 NVIDIA AI Academy 과정을 매일 9-to-6 루틴으로 흔들림 없이 수료하며 선택에 대한 책임감과 새로운 분야도 빠르게 흡수할 수 있다는 자신감을 얻었습니다.',
+          '나아가 배움에만 머무르지 않고, 일상의 문제를 직접 정의해 App Store에 두 개의 상용 iOS 앱을 정식 출시·운영하고 있습니다. 온디바이스 Vision·CoreML 기반 실시간 AI 카메라 포즈 가이드 앱 ‘PosePik(포즈픽)’과, FSRS 망각곡선 알고리즘·온디바이스 OCR·WidgetKit·watchOS를 아우르는 스마트 플래시카드 앱 ‘Lumio(루미오)’를 기획부터 코드 구현, 실기기 필드 QA, 웹 랜딩 운영까지 1인 풀사이클로 완주하며 매일 성장하고 있습니다.'
+        ]
+      },
+      {
+        id: 'school',
+        num: '03',
+        tabLabel: '성장배경',
+        title: '학창시절과 IT 메이커의 뿌리',
+        lead: '어린 시절 첫 컴퓨터 자격증부터 대학 연구소와 연합 IT 동아리 SOPT까지, 성실함과 호기심으로 기반을 다져왔습니다.',
+        paragraphs: [
+          '초등학교 시절 훌륭한 컴퓨터학원 은사님을 만나 일찍부터 IT와 컴퓨터에 깊은 흥미를 느꼈습니다. 그 시기 정보처리기능사, 정보기기운용기능사, 컴퓨터활용능력 2급, 워드프로세서 자격증을 취득했고 수학경시대회에서도 여러 차례 최우수상을 받았습니다. 동시에 농구·야구·축구와 달리기를 좋아해 학급 대표로 뛰고, 아버지와 3박 4일간 지리산 천왕봉을 등반하는 등 몸과 마음이 건강한 어린 시절을 보냈습니다.',
+          '중학교 시절에는 음악 감상과 컴퓨터 게임을 즐기며 친구들과 두루 어울려 졸업 때 우정상을 받았고, 고등학교 시절에는 시 작문에 관심을 두는 한편 고1 때 2박 3일간 소록도 봉사활동에 다녀오며 나눔의 가치를 배웠습니다. 또한 로봇축구동아리에서 활동하며 KAIST에서 열린 대회에 참가해 소프트웨어와 하드웨어가 맞물려 움직이는 즐거움을 경험했습니다.',
+          '남서울대학교 지구·지리학 및 GIS공학과에 진학한 뒤에는 학업과 아르바이트를 병행하며 주위로부터 성실하다는 평가를 받았습니다. 분당 소재 부동산경제연구소에서 장기간 시장조사·기획서 작성 보조 업무를 수행했고, 군 전역 복학 후에는 성적장학금을 받으며 교내 지능형교통연구소 국가근로장학생으로 선발되어 석·박사 과정 연구원들의 보고서 작업을 도왔습니다. 더불어 수도권 대학 연합 IT 벤처 동아리 ‘SOPT’ 6기 개발파트로 활동하며 폭넓은 네트워킹을 쌓았고, 충남 청년CEO 500 창업공모전에서 아이디어가 선정되어 프로젝트를 진행하는 등 치열하게 도전하며 3.44 / 4.5 학점으로 졸업했습니다.'
+        ]
+      },
+      {
+        id: 'career',
+        num: '04',
+        tabLabel: '경력기술서',
+        title: '경력 상세 기술서 및 상용 앱 메이킹',
+        lead: '물류·공장 자동화, 빅데이터, 클라우드 웹 개발, 서버 리소스 QC 실무(4년+)와 1인 상용 iOS 프로덕트 운영 경험을 잇습니다.',
+        careerItems: [
+          {
+            period: '현재 운영 중',
+            org: 'PosePik & Lumio',
+            role: '1인 상용 iOS 프로덕트 메이커 (기획 · 개발 · 실기기 QA · 운영)',
+            companyDesc: 'App Store 정식 출시 모바일 프로덕트 (posepik.com · lumioapp.win)',
+            tasks: [
+              'Swift · Vision · CoreML · AVFoundation 기반 실시간 카메라 포즈 가이드 무료 앱 PosePik 개발·출시 및 솔로 모드 업데이트',
+              'FSRS 간격 반복 알고리즘 · 온디바이스 OCR · WidgetKit · Apple Watch 연동 스마트 플래시카드 앱 Lumio 개발·출시',
+              '역광·저조도·발열, 실제 인쇄물 OCR, iPhone–Watch 오프라인 동기화 등 시뮬레이터 한계를 보완한 실기기 회귀 QA 수행'
+            ]
+          },
+          {
+            period: '2021.12 ~ 2022.06',
+            org: '기업·개인 신용데이터 기업 (파견)',
+            role: 'CB개발부 · 매니저 (서버 리소스 QC)',
+            companyDesc: '기업 및 개인 신용데이터 전문 기업',
+            tasks: [
+              'Linux Shell 스크립트 환경에서 파견사 서버 CPU 및 RAM 점유율 상시 모니터링(QC) 수행',
+              '일별 · 주간 · 2주 · 월별 컴퓨팅 리소스 점검 작업 수행 및 이상 징후 보고',
+              '월간 품질·리소스 보고서 작성을 위한 원시 데이터 추출 및 Excel · PowerPoint 정량 시각화 리포팅'
+            ]
+          },
+          {
+            period: '2017.10 ~ 2018.07',
+            org: '클라우드 · 웹 솔루션 개발사',
+            role: '클라우드 포털 개발 대리 · 웹 개발 주임',
+            companyDesc: '클라우드 대시보드 및 기업 웹·CMS 구축 기업',
+            tasks: [
+              'React · Node.js 기반 클라우드 포털 대시보드 프론트엔드 및 연동 기능 개발',
+              'PHP · JavaScript · jQuery 기반 오름 홈페이지(CMS) 전면 리뉴얼 구축'
+            ]
+          },
+          {
+            period: '2015.08 ~ 2016.01',
+            org: '공장 자동화 프로그램 개발사',
+            role: '기술개발2팀 · 사원',
+            companyDesc: '산업·공장 자동화 소프트웨어 전문 개발 기업',
+            tasks: [
+              'C# 기반 사내 전산 시스템 개발 및 유지보수 (재고관리, 업무일지, 유지보수관리내역 시스템)',
+              '고객사 육상자동출하시스템 운영 유지보수 및 안정화 지원',
+              '고객사 공정 리포트(REPORT) 프로그램 개발 및 장애 서버 복구 수행'
+            ]
+          },
+          {
+            period: '2014.07 ~ 2015.07',
+            org: '빅데이터 플랫폼 벤처기업',
+            role: '플랫폼개발팀 · 선임연구원',
+            companyDesc: '빅데이터 분석 플랫폼 스타트업·벤처 기업',
+            tasks: [
+              '주력 빅데이터 플랫폼 ‘라온 2.0’ 업그레이드 및 프론트엔드 개발',
+              '공식 회사 홈페이지 구축 오픈 및 상시 운영',
+              '스타트업 유통 아이디어 공모전 기획서 작성 보조 및 공공 빅데이터 분석 실무 연계'
+            ]
+          },
+          {
+            period: '2012.10 ~ 2013.10',
+            org: '물류 · 창고 자동화 시스템 개발사',
+            role: '시스템개발부 · 사원',
+            companyDesc: '스마트 물류 및 자동화 창고 시스템 구축 기업',
+            tasks: [
+              '고객사 냉동창고 및 자동화창고 제어·관리 시스템 DB 설계, 커스터마이징 개발, 현장 설치 및 시운전',
+              '고객사 와이어하네스 자동화 창고 시스템 고도화 업그레이드'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'motivation',
+        num: '05',
+        tabLabel: '지원동기 · 포부',
+        title: '지원동기와 팀에 기여하는 방식',
+        lead: '코드를 이해하는 QA이자 품질을 끝까지 책임지는 개발자로서, 맡은 일을 빈틈없이 완수하는 신뢰받는 팀원이 되겠습니다.',
+        paragraphs: [
+          '인공지능 개발자 교육과정에서 AI 기반 반려견 산책·케어 어시스턴트 웹앱(‘구마야 산책가자’) 팀 프로젝트를 수행하며, LLM 챗봇 RAG 파이프라인과 현재 위치 기반 플레이스 지도·마커 클러스터링을 직접 개발하는 동시에 팀 내 QA 리드를 맡았습니다. 과거 수료했던 SW QA 교육과 서버 QC 실무 경험을 바탕으로 총 219개의 테스트케이스(TC)를 설계·수행하고 27건의 결함을 도출했으며, 수정 재검증을 거쳐 PASS율을 87.7%에서 93.2%까지 끌어올린 최종 테스트 결과 보고서를 완성했습니다.',
+          '또한 Python과 AI를 학습하며 품질 검증을 자동화로 확장하기 위해 FastAPI + Appium + Android SDK 스택으로 사이드 프로젝트를 단독 구현했습니다. 실제 상용 앱(올리브영)을 타겟으로 단말 제어, 로그인 버튼 탐색·클릭, 계정 및 비밀번호 입력 플로우가 자동으로 수행되도록 구축해 모바일 UI 테스트 자동화의 기반을 직접 확인했습니다.',
+          '입사 후에는 개발 구조에 대한 이해와 집요한 품질 검증 시각을 겸비한 구성원으로서 맡은 업무를 성실히 해내고, 동료들이 언제든 믿고 의지할 수 있는 팀원이 되겠습니다. 이 서재의 포트폴리오에 함께 담은 상용 iOS 앱(PosePik · Lumio), 219건의 QA 산출물 통합 뷰어, 그리고 테스트 자동화 시연 영상도 편히 살펴봐 주시면 감사하겠습니다.'
+        ]
+      }
     ]
   },
 

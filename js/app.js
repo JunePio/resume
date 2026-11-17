@@ -52,6 +52,24 @@
     return encodeURI(target);
   }
 
+  function renderSafeLocalImg(rawPath, altText, className) {
+    if (!rawPath) return '';
+    const str = String(rawPath);
+    const nfdSrc = encodeURI(typeof str.normalize === 'function' ? str.normalize('NFD') : str);
+    const nfcSrc = encodeURI(typeof str.normalize === 'function' ? str.normalize('NFC') : str);
+    return (
+      '<img class="' +
+      escapeHtml(className || '') +
+      '" src="' +
+      nfdSrc +
+      '" data-fallback-src="' +
+      nfcSrc +
+      '" alt="' +
+      escapeHtml(altText || '') +
+      '" loading="lazy" onerror="if(this.dataset.fallbackSrc&&this.getAttribute(\'src\')!==this.dataset.fallbackSrc){this.setAttribute(\'src\',this.dataset.fallbackSrc);}else{this.onerror=null;if(this.parentElement)this.parentElement.classList.add(\'is-img-fallback\');}">'
+    );
+  }
+
   function escapeHtml(str) {
     return String(str || '')
       .replace(/&/g, '&amp;')
@@ -241,7 +259,19 @@
     qaSheet: 'test-cases',
     qaSearch: '',
     qaCategory: 'ALL',
-    qaStatus: 'ALL'
+    qaStatus: 'ALL',
+    clFontSize: 16,
+    clTheme: 'dark',
+    clActiveSection: '',
+    clTocLockUntil: 0,
+    coverLetterCompleted: false,
+    clRendered: false,
+    rmFontSize: 16,
+    rmTheme: 'dark',
+    rmActiveSection: '',
+    rmTocLockUntil: 0,
+    resumeCompleted: false,
+    rmRendered: false
   };
 
   // ---- DOM References ----
@@ -260,11 +290,11 @@
     soundGuideTooltip: document.getElementById('sound-guide-tooltip'),
 
     lightAllBtn: document.getElementById('light-all-btn'),
-    navResumeLink: document.getElementById('nav-resume-link'),
-    navCoverLink: document.getElementById('nav-cover-link'),
+    navResumeBtn: document.getElementById('nav-resume-btn'),
+    navCoverBtn: document.getElementById('nav-cover-btn'),
     navLinkedinLink: document.getElementById('nav-linkedin-link'),
-    footerResumeLink: document.getElementById('footer-resume-link'),
-    footerCoverLink: document.getElementById('footer-cover-link'),
+    footerResumeBtn: document.getElementById('footer-resume-btn'),
+    footerCoverBtn: document.getElementById('footer-cover-btn'),
     footerLinkedinLink: document.getElementById('footer-linkedin-link'),
 
     showcaseContainer: document.getElementById('showcase-container'),
@@ -314,6 +344,32 @@
     qaVisibleCount: document.getElementById('qa-visible-count'),
     qaModalBody: document.getElementById('qa-modal-body'),
 
+    clModal: document.getElementById('cover-letter-modal'),
+    clProgressBar: document.getElementById('cl-progress-bar'),
+    clProgressText: document.getElementById('cl-progress-text'),
+    clModalBadge: document.getElementById('cl-modal-badge'),
+    clModalTitle: document.getElementById('cl-modal-title'),
+    clModalSubtitle: document.getElementById('cl-modal-subtitle'),
+    clFontDec: document.getElementById('cl-font-dec'),
+    clFontInc: document.getElementById('cl-font-inc'),
+    clFontSizeLabel: document.getElementById('cl-font-size-label'),
+    clModalCloseBtn: document.getElementById('cl-modal-close-btn'),
+    clTocBar: document.getElementById('cl-toc-bar'),
+    clModalBody: document.getElementById('cl-modal-body'),
+
+    rmModal: document.getElementById('resume-modal'),
+    rmProgressBar: document.getElementById('rm-progress-bar'),
+    rmProgressText: document.getElementById('rm-progress-text'),
+    rmModalBadge: document.getElementById('rm-modal-badge'),
+    rmModalTitle: document.getElementById('rm-modal-title'),
+    rmModalSubtitle: document.getElementById('rm-modal-subtitle'),
+    rmFontDec: document.getElementById('rm-font-dec'),
+    rmFontInc: document.getElementById('rm-font-inc'),
+    rmFontSizeLabel: document.getElementById('rm-font-size-label'),
+    rmModalCloseBtn: document.getElementById('rm-modal-close-btn'),
+    rmTocBar: document.getElementById('rm-toc-bar'),
+    rmModalBody: document.getElementById('rm-modal-body'),
+
     toastContainer: document.getElementById('toast-container')
   };
 
@@ -333,11 +389,9 @@
     }, 2400);
   }
 
-  // ---- Profile & PDF Hydration ----
+  // ---- Profile & Document Hydration ----
   function hydrateChrome() {
     const p = DATA.profile;
-    const resumeHref = encodeAssetPath(p.resumePdf);
-    const coverHref = encodeAssetPath(p.coverLetterPdf);
 
     const setText = function (id, txt) {
       const el = document.getElementById(id);
@@ -352,21 +406,17 @@
     setText('footer-name', p.name);
     setText('footer-tagline', p.tagline);
 
-    [dom.navResumeLink, dom.footerResumeLink].forEach(function (link) {
-      if (!link) return;
-      link.href = resumeHref;
-      link.addEventListener('click', function () {
-        if (SOUND) SOUND.playSoftClick();
-        trackEvent('open_resume_pdf', { source: link.id });
+    [dom.navResumeBtn, dom.footerResumeBtn].forEach(function (btn) {
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        openResumeModal(btn.id);
       });
     });
 
-    [dom.navCoverLink, dom.footerCoverLink].forEach(function (link) {
-      if (!link) return;
-      link.href = coverHref;
-      link.addEventListener('click', function () {
-        if (SOUND) SOUND.playSoftClick();
-        trackEvent('open_cover_letter_pdf', { source: link.id });
+    [dom.navCoverBtn, dom.footerCoverBtn].forEach(function (btn) {
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        openCoverLetterModal(btn.id);
       });
     });
 
@@ -600,8 +650,6 @@
   function renderPanel1Html() {
     const p = DATA.profile;
     const li = DATA.linkedinProfile;
-    const resumeHref = encodeAssetPath(p.resumePdf);
-    const coverHref = encodeAssetPath(p.coverLetterPdf);
     const linkedinHref = sanitizeUrl(p.linkedinUrl);
 
     const highlightsHtml = p.highlights
@@ -710,9 +758,18 @@
         '</div>';
     }
 
+    const cupPhotoHtml = p.cardProfilePhoto
+      ? '<div class="profile-cup-frame">' +
+        renderSafeLocalImg(p.cardProfilePhoto, p.name + ' 커피잔 라떼아트 프로필 사진', 'profile-cup-img') +
+        '</div>'
+      : '';
+
     return (
       '<div class="profile-grid">' +
       '<div class="profile-summary-box">' +
+      '<div class="profile-hero-head">' +
+      cupPhotoHtml +
+      '<div class="profile-hero-titles">' +
       '<div class="profile-name-row">' +
       '<h3>' +
       escapeHtml(p.name) +
@@ -722,6 +779,9 @@
       ' · ' +
       escapeHtml(p.tagline) +
       '</span>' +
+      '</div>' +
+      '<p class="profile-hero-caption">따뜻한 시선으로 일상의 문제를 포착하고 프로덕트로 빚어냅니다.</p>' +
+      '</div>' +
       '</div>' +
       '<p class="profile-bio">' +
       escapeHtml(p.summary) +
@@ -758,23 +818,19 @@
       '</div>' +
       '<div class="doc-card">' +
       '<div class="doc-card-head">' +
-      '<h4 class="doc-card-title">공식 이력서 (PDF)</h4>' +
+      '<h4 class="doc-card-title">공식 이력서 (웹 열람)</h4>' +
       '<span class="mono-badge">RESUME</span>' +
       '</div>' +
-      '<p class="doc-card-sub">학력, 4년+ 개발·QC 경력사항, 교육 이수, 보유 자격증 전체 내역을 새 탭에서 확인합니다.</p>' +
-      '<a class="btn-brass-outline" href="' +
-      resumeHref +
-      '" target="_blank" rel="noopener" data-track-pdf="open_resume_pdf">이력서.pdf 열람하기 ↗</a>' +
+      '<p class="doc-card-sub">인적 프로필, 4년+ 실무 및 상용 iOS 경력, 학력·대외활동, 직업훈련 10건, 자격증 7종을 웹에서 바로 확인합니다.</p>' +
+      '<button type="button" class="btn-brass-solid" data-open-resume="candle_1_panel">이력서 바로 보기 ✦</button>' +
       '</div>' +
       '<div class="doc-card">' +
       '<div class="doc-card-head">' +
-      '<h4 class="doc-card-title">자기소개서 (PDF)</h4>' +
+      '<h4 class="doc-card-title">자기소개서 (웹 열람)</h4>' +
       '<span class="mono-badge">COVER LETTER</span>' +
       '</div>' +
-      '<p class="doc-card-sub">가치관, 경력 상세 기술서 및 QA·자동화 프로젝트 동기를 새 탭에서 확인합니다.</p>' +
-      '<a class="btn-brass-outline" href="' +
-      coverHref +
-      '" target="_blank" rel="noopener" data-track-pdf="open_cover_letter_pdf">자기소개서.pdf 열람하기 ↗</a>' +
+      '<p class="doc-card-sub">성격·가치관, 4년+ 실무 및 상용 iOS 앱 기술서, 지원동기를 사이트 내 전용 리더로 바로 읽습니다.</p>' +
+      '<button type="button" class="btn-brass-solid" data-open-cover-letter="candle_1_panel">자기소개서 바로 읽기 ✦</button>' +
       '</div>' +
       '</div>' +
       '</div>' +
@@ -1608,7 +1664,9 @@
     const anyOpen =
       (dom.videoLightbox && !dom.videoLightbox.hidden) ||
       (dom.ebookModal && !dom.ebookModal.hidden) ||
-      (dom.qaModal && !dom.qaModal.hidden);
+      (dom.qaModal && !dom.qaModal.hidden) ||
+      (dom.rmModal && !dom.rmModal.hidden) ||
+      (dom.clModal && !dom.clModal.hidden);
     dom.body.classList.toggle('modal-open', Boolean(anyOpen));
   }
 
@@ -2140,6 +2198,720 @@
     }
   }
 
+  // ---- Cover Letter Dedicated Web Reader Modal ----
+  function renderCoverLetterModal() {
+    const cl = DATA.coverLetter;
+    if (!cl || !dom.clModal || state.clRendered) return;
+
+    if (dom.clModalBadge) dom.clModalBadge.textContent = cl.badge || 'COVER LETTER';
+    if (dom.clModalTitle) dom.clModalTitle.textContent = cl.title || '이준영 자기소개서';
+    if (dom.clModalSubtitle) dom.clModalSubtitle.textContent = cl.subtitle || '';
+
+    const sections = Array.isArray(cl.sections) ? cl.sections : [];
+
+    if (dom.clTocBar) {
+      dom.clTocBar.innerHTML = sections
+        .map(function (sec, idx) {
+          return (
+            '<button type="button" class="cl-toc-pill' +
+            (idx === 0 ? ' is-active' : '') +
+            '" data-cl-jump="' +
+            escapeHtml(sec.id) +
+            '">' +
+            '<span class="cl-toc-num">' +
+            escapeHtml(sec.num) +
+            '</span>' +
+            '<span>' +
+            escapeHtml(sec.tabLabel || sec.title) +
+            '</span>' +
+            '</button>'
+          );
+        })
+        .join('');
+    }
+
+    const highlightsHtml = (cl.highlights || [])
+      .map(function (h) {
+        return (
+          '<div class="cl-highlight-item">' +
+          '<span>' +
+          escapeHtml(h.label) +
+          '</span>' +
+          '<strong>' +
+          escapeHtml(h.value) +
+          '</strong>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const sectionsHtml = sections
+      .map(function (sec) {
+        let bodyHtml = '';
+        if (Array.isArray(sec.paragraphs) && sec.paragraphs.length) {
+          bodyHtml +=
+            '<div class="cl-paragraphs">' +
+            sec.paragraphs
+              .map(function (p) {
+                return '<p>' + escapeHtml(p) + '</p>';
+              })
+              .join('') +
+            '</div>';
+        }
+        if (Array.isArray(sec.careerItems) && sec.careerItems.length) {
+          bodyHtml +=
+            '<div class="cl-career-stack">' +
+            sec.careerItems
+              .map(function (item) {
+                const tasksHtml = (item.tasks || [])
+                  .map(function (t) {
+                    return '<li>' + escapeHtml(t) + '</li>';
+                  })
+                  .join('');
+                return (
+                  '<div class="cl-career-card">' +
+                  '<div class="cl-career-card-top">' +
+                  '<span class="cl-career-period mono-num">' +
+                  escapeHtml(item.period) +
+                  '</span>' +
+                  '<strong class="cl-career-org">' +
+                  escapeHtml(item.org) +
+                  '</strong>' +
+                  '</div>' +
+                  '<h4 class="cl-career-role">' +
+                  escapeHtml(item.role) +
+                  '</h4>' +
+                  (item.companyDesc
+                    ? '<p class="cl-career-company-desc">' +
+                      escapeHtml(item.companyDesc) +
+                      '</p>'
+                    : '') +
+                  '<ul class="cl-career-tasks">' +
+                  tasksHtml +
+                  '</ul>' +
+                  '</div>'
+                );
+              })
+              .join('') +
+            '</div>';
+        }
+
+        return (
+          '<section class="cl-chapter-section" id="cl-sec-' +
+          escapeHtml(sec.id) +
+          '" data-cl-section="' +
+          escapeHtml(sec.id) +
+          '">' +
+          '<header class="cl-chapter-head">' +
+          '<span class="cl-chapter-num">' +
+          escapeHtml(sec.num) +
+          '</span>' +
+          '<h3 class="cl-chapter-title">' +
+          escapeHtml(sec.title) +
+          '</h3>' +
+          '</header>' +
+          (sec.lead ? '<p class="cl-chapter-lead">' + escapeHtml(sec.lead) + '</p>' : '') +
+          bodyHtml +
+          '</section>'
+        );
+      })
+      .join('');
+
+    const qaBtnHtml = QA_BOOK
+      ? '<button type="button" class="cl-action-solid" data-cl-open-qa="test-cases">QA 219 TC 산출물 뷰어 열기 ↗</button>'
+      : '';
+    const autoBtnHtml =
+      DATA.qaPortfolio && DATA.qaPortfolio.automationDemo && DATA.qaPortfolio.automationDemo.youtubeUrl
+        ? '<button type="button" class="cl-action-outline" data-cl-play-auto="true">Appium 자동화 시연 영상 보기 ▶</button>'
+        : '';
+    const resumeBtnHtml = DATA.resumeData
+      ? '<button type="button" class="cl-action-outline" data-cl-open-resume="true">공식 웹 이력서 보기 ✦</button>'
+      : '';
+
+    const relatedHtml =
+      '<div class="cl-related-card">' +
+      '<div class="cl-related-head">' +
+      '<strong>포트폴리오 근거 산출물 바로가기</strong>' +
+      '<span>자기소개서에서 언급한 QA 테스트케이스, 모바일 테스트 자동화 시연 영상 및 공식 이력서를 바로 확인할 수 있습니다.</span>' +
+      '</div>' +
+      '<div class="cl-related-actions">' +
+      qaBtnHtml +
+      autoBtnHtml +
+      resumeBtnHtml +
+      '</div>' +
+      '</div>';
+
+    if (dom.clModalBody) {
+      dom.clModalBody.innerHTML =
+        '<article class="cl-reader-article">' +
+        (highlightsHtml ? '<div class="cl-highlights-strip">' + highlightsHtml + '</div>' : '') +
+        sectionsHtml +
+        relatedHtml +
+        '</article>';
+    }
+
+    state.clActiveSection = sections.length ? sections[0].id : '';
+    state.clRendered = true;
+  }
+
+  function applyCoverLetterPreferences() {
+    if (!dom.clModal) return;
+    dom.clModal.setAttribute('data-cl-theme', state.clTheme);
+    dom.clModal.style.setProperty('--cl-font-size', state.clFontSize + 'px');
+    if (dom.clFontSizeLabel) {
+      dom.clFontSizeLabel.textContent = state.clFontSize + 'px';
+    }
+    dom.clModal.querySelectorAll('[data-cl-theme-btn]').forEach(function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-cl-theme-btn') === state.clTheme);
+    });
+  }
+
+  function setActiveCoverLetterToc(sectionId) {
+    if (!sectionId || !dom.clTocBar) return;
+    state.clActiveSection = sectionId;
+    dom.clTocBar.querySelectorAll('[data-cl-jump]').forEach(function (pill) {
+      pill.classList.toggle('is-active', pill.getAttribute('data-cl-jump') === sectionId);
+    });
+  }
+
+  function updateCoverLetterScroll() {
+    if (!dom.clModalBody || !dom.clModal || dom.clModal.hidden) return;
+    const el = dom.clModalBody;
+    const scrollable = el.scrollHeight - el.clientHeight;
+    const pct =
+      scrollable <= 0 ? 100 : Math.min(100, Math.max(0, Math.round((el.scrollTop / scrollable) * 100)));
+
+    if (dom.clProgressBar) dom.clProgressBar.style.width = pct + '%';
+    if (dom.clProgressText) dom.clProgressText.textContent = pct + '%';
+
+    const sections = el.querySelectorAll('.cl-chapter-section');
+    if (sections.length && Date.now() > state.clTocLockUntil) {
+      const containerTop = el.getBoundingClientRect().top;
+      let currentId = sections[0].getAttribute('data-cl-section') || '';
+      sections.forEach(function (sec) {
+        const relTop = sec.getBoundingClientRect().top - containerTop;
+        if (relTop <= 110) {
+          currentId = sec.getAttribute('data-cl-section') || currentId;
+        }
+      });
+      if (scrollable > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 16) {
+        currentId = sections[sections.length - 1].getAttribute('data-cl-section') || currentId;
+      }
+      if (currentId && currentId !== state.clActiveSection) {
+        setActiveCoverLetterToc(currentId);
+      }
+    }
+
+    if (pct >= 90 && !state.coverLetterCompleted) {
+      state.coverLetterCompleted = true;
+      trackEvent('complete_cover_letter_read', { progress_percent: pct });
+    }
+  }
+
+  function openCoverLetterModal(source, sectionId) {
+    if (!DATA.coverLetter || !dom.clModal) return;
+    renderCoverLetterModal();
+    state.lastTriggerEl = document.activeElement;
+
+    applyCoverLetterPreferences();
+    dom.clModal.hidden = false;
+    syncModalBodyLock();
+
+    if (SOUND) SOUND.playPaperRustle();
+
+    if (dom.clModalBody) {
+      if (sectionId) {
+        const target = document.getElementById('cl-sec-' + sectionId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          setActiveCoverLetterToc(sectionId);
+        } else {
+          dom.clModalBody.scrollTop = 0;
+        }
+      } else {
+        dom.clModalBody.scrollTop = 0;
+        const firstSection =
+          DATA.coverLetter.sections && DATA.coverLetter.sections[0] ? DATA.coverLetter.sections[0].id : '';
+        if (firstSection) setActiveCoverLetterToc(firstSection);
+      }
+      updateCoverLetterScroll();
+      dom.clModalBody.focus();
+    }
+
+    trackEvent('open_cover_letter', { source: source || 'unknown' });
+  }
+
+  function closeCoverLetterModal(skipFocusRestore) {
+    if (!dom.clModal || dom.clModal.hidden) return;
+    if (SOUND) SOUND.playSoftClick();
+    dom.clModal.hidden = true;
+    syncModalBodyLock();
+    if (!skipFocusRestore && state.lastTriggerEl && typeof state.lastTriggerEl.focus === 'function') {
+      state.lastTriggerEl.focus();
+    }
+  }
+
+  // ---- Official Web Resume Modal ----
+  function renderResumeModal() {
+    const rm = DATA.resumeData;
+    if (!rm || !dom.rmModal || state.rmRendered) return;
+
+    if (dom.rmModalBadge) dom.rmModalBadge.textContent = rm.badge || 'OFFICIAL WEB RESUME';
+    if (dom.rmModalTitle) dom.rmModalTitle.textContent = rm.title || '이준영 공식 이력서';
+    if (dom.rmModalSubtitle) dom.rmModalSubtitle.textContent = rm.subtitle || '';
+
+    const sections = Array.isArray(rm.sections) ? rm.sections : [];
+
+    if (dom.rmTocBar) {
+      dom.rmTocBar.innerHTML = sections
+        .map(function (sec, idx) {
+          return (
+            '<button type="button" class="cl-toc-pill' +
+            (idx === 0 ? ' is-active' : '') +
+            '" data-rm-jump="' +
+            escapeHtml(sec.id) +
+            '">' +
+            '<span class="cl-toc-num">' +
+            escapeHtml(sec.num) +
+            '</span>' +
+            '<span>' +
+            escapeHtml(sec.tabLabel || sec.title) +
+            '</span>' +
+            '</button>'
+          );
+        })
+        .join('');
+    }
+
+    const h = rm.header || {};
+    const photoHtml = h.photo
+      ? '<div class="rm-photo-frame">' +
+        renderSafeLocalImg(h.photo, (h.name || '이준영') + ' 프로필 증명사진', 'rm-photo-img') +
+        '</div>'
+      : '';
+
+    const linksHtml = (h.links || [])
+      .map(function (lk) {
+        return (
+          '<a class="rm-contact-chip" href="' +
+          sanitizeUrl(lk.url) +
+          '" target="_blank" rel="noopener">' +
+          escapeHtml(lk.label) +
+          ' ↗</a>'
+        );
+      })
+      .join('');
+
+    const profileHeaderHtml =
+      '<div class="rm-profile-card">' +
+      photoHtml +
+      '<div class="rm-profile-info">' +
+      '<div class="rm-profile-name-row">' +
+      '<h3>' +
+      escapeHtml(h.name) +
+      '</h3>' +
+      '<span>' +
+      escapeHtml(h.englishName) +
+      '</span>' +
+      '</div>' +
+      '<p class="rm-profile-role">' +
+      escapeHtml(h.role) +
+      '</p>' +
+      '<div class="rm-contact-grid">' +
+      (h.email
+        ? '<div class="rm-contact-chip rm-email-chip">' +
+          '<span>' +
+          escapeHtml(h.email) +
+          '</span>' +
+          '<button type="button" class="rm-copy-btn" data-copy-email="' +
+          escapeHtml(h.email) +
+          '">복사</button>' +
+          '</div>'
+        : '') +
+      (h.linkedinUrl
+        ? '<a class="rm-contact-chip" href="' +
+          sanitizeUrl(h.linkedinUrl) +
+          '" target="_blank" rel="noopener">LinkedIn (' +
+          escapeHtml(h.linkedinLabel || 'younghwen') +
+          ') ↗</a>'
+        : '') +
+      linksHtml +
+      '</div>' +
+      '</div>' +
+      '</div>';
+
+    const kpisHtml =
+      Array.isArray(h.metrics) && h.metrics.length
+        ? '<div class="rm-kpis-grid">' +
+          h.metrics
+            .map(function (m) {
+              return (
+                '<div class="cl-highlight-item">' +
+                '<span>' +
+                escapeHtml(m.label) +
+                '</span>' +
+                '<strong>' +
+                escapeHtml(m.value) +
+                '</strong>' +
+                '</div>'
+              );
+            })
+            .join('') +
+          '</div>'
+        : '';
+
+    const sec1Meta = sections[0] || { id: 'career', num: '01', title: '경력사항 및 상용 프로덕트' };
+    const careersHtml = (rm.careers || [])
+      .map(function (c) {
+        const isFeatured = c.category === '상용 프로덕트' || c.category === 'AI · QA 프로젝트';
+        return (
+          '<div class="cl-career-card">' +
+          '<div class="cl-career-card-top">' +
+          '<span class="rm-career-cat' +
+          (isFeatured ? ' is-featured' : '') +
+          '">' +
+          escapeHtml(c.category) +
+          '</span>' +
+          '<span class="cl-career-period mono-num">' +
+          escapeHtml(c.period) +
+          '</span>' +
+          '<strong class="cl-career-org">' +
+          escapeHtml(c.org) +
+          '</strong>' +
+          '</div>' +
+          '<h4 class="cl-career-role">' +
+          escapeHtml(c.position) +
+          '</h4>' +
+          '<p class="rm-career-duties">' +
+          escapeHtml(c.duties) +
+          '</p>' +
+          (c.stack ? '<div class="rm-stack-line">' + escapeHtml(c.stack) + '</div>' : '') +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const sec2Meta = sections[1] || { id: 'education', num: '02', title: '학력사항 및 주요 대외·연구 활동' };
+    const eduHtml = (rm.education || [])
+      .map(function (ed) {
+        return (
+          '<div class="rm-edu-card">' +
+          '<div class="rm-edu-main">' +
+          '<span class="cl-career-period mono-num">' +
+          escapeHtml(ed.period) +
+          '</span>' +
+          '<h4>' +
+          escapeHtml(ed.school) +
+          '</h4>' +
+          '<p>' +
+          escapeHtml(ed.major) +
+          '</p>' +
+          '</div>' +
+          '<div class="rm-edu-meta">' +
+          '<span>' +
+          escapeHtml(ed.degree) +
+          '</span>' +
+          '<strong>학점 ' +
+          escapeHtml(ed.gpa) +
+          '</strong>' +
+          '</div>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const actHtml = (rm.activities || [])
+      .map(function (act) {
+        return (
+          '<div class="cl-career-card">' +
+          '<div class="cl-career-card-top">' +
+          '<span class="rm-career-cat">' +
+          escapeHtml(act.type) +
+          '</span>' +
+          '<span class="cl-career-period mono-num">' +
+          escapeHtml(act.period) +
+          '</span>' +
+          '<strong class="cl-career-org">' +
+          escapeHtml(act.org) +
+          '</strong>' +
+          '</div>' +
+          '<h4 class="cl-career-role">' +
+          escapeHtml(act.role) +
+          '</h4>' +
+          '<p class="rm-career-duties" style="margin-bottom:0">' +
+          escapeHtml(act.desc) +
+          '</p>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const sec3Meta = sections[2] || { id: 'training', num: '03', title: '직업훈련 및 전문교육 이수이력' };
+    const trainingsHtml = (rm.trainings || [])
+      .map(function (tr) {
+        return (
+          '<div class="rm-training-item">' +
+          '<div class="rm-training-meta">' +
+          '<span class="rm-training-period mono-num">' +
+          escapeHtml(tr.period) +
+          '</span>' +
+          '<span class="rm-training-org">' +
+          escapeHtml(tr.org) +
+          '</span>' +
+          '</div>' +
+          '<div class="rm-training-body">' +
+          '<strong>' +
+          escapeHtml(tr.course) +
+          '</strong>' +
+          '<p>' +
+          escapeHtml(tr.detail) +
+          '</p>' +
+          '</div>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const sec4Meta = sections[3] || { id: 'certifications', num: '04', title: '보유 자격면허 및 핵심 기술 역량' };
+    const certsHtml = (rm.certifications || [])
+      .map(function (cert) {
+        return (
+          '<div class="rm-cert-card">' +
+          '<div>' +
+          '<strong>' +
+          escapeHtml(cert.name) +
+          '</strong>' +
+          '<span>' +
+          escapeHtml(cert.issuer) +
+          '</span>' +
+          '</div>' +
+          '<span class="rm-cert-date mono-num">' +
+          escapeHtml(cert.date) +
+          '</span>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const skillsHtml = (rm.skillGroups || [])
+      .map(function (sg) {
+        return (
+          '<div class="rm-skill-card">' +
+          '<h4>' +
+          escapeHtml(sg.group) +
+          '</h4>' +
+          '<p>' +
+          escapeHtml(sg.items) +
+          '</p>' +
+          '</div>'
+        );
+      })
+      .join('');
+
+    const coverBtnHtml = DATA.coverLetter
+      ? '<button type="button" class="cl-action-solid" data-rm-open-cover="true">자기소개서 이어 읽기 ✦</button>'
+      : '';
+    const qaBtnHtml = QA_BOOK
+      ? '<button type="button" class="cl-action-outline" data-rm-open-qa="test-cases">QA 219 TC 산출물 뷰어 열기 ↗</button>'
+      : '';
+
+    const relatedHtml =
+      '<div class="cl-related-card">' +
+      '<div class="cl-related-head">' +
+      '<strong>연계 문서 및 검증 산출물</strong>' +
+      '<span>이력서와 이어지는 자기소개서 스토리 및 구마야 산책가자 219 TC QA 산출물을 바로 확인할 수 있습니다.</span>' +
+      '</div>' +
+      '<div class="cl-related-actions">' +
+      coverBtnHtml +
+      qaBtnHtml +
+      '</div>' +
+      '</div>';
+
+    const sectionsHtml =
+      '<section class="cl-chapter-section" id="rm-sec-' +
+      escapeHtml(sec1Meta.id) +
+      '" data-rm-section="' +
+      escapeHtml(sec1Meta.id) +
+      '">' +
+      '<header class="cl-chapter-head">' +
+      '<span class="cl-chapter-num">' +
+      escapeHtml(sec1Meta.num) +
+      '</span>' +
+      '<h3 class="cl-chapter-title">' +
+      escapeHtml(sec1Meta.title) +
+      '</h3>' +
+      '</header>' +
+      '<div class="cl-career-stack">' +
+      careersHtml +
+      '</div>' +
+      '</section>' +
+      '<section class="cl-chapter-section" id="rm-sec-' +
+      escapeHtml(sec2Meta.id) +
+      '" data-rm-section="' +
+      escapeHtml(sec2Meta.id) +
+      '">' +
+      '<header class="cl-chapter-head">' +
+      '<span class="cl-chapter-num">' +
+      escapeHtml(sec2Meta.num) +
+      '</span>' +
+      '<h3 class="cl-chapter-title">' +
+      escapeHtml(sec2Meta.title) +
+      '</h3>' +
+      '</header>' +
+      eduHtml +
+      '<div class="rm-activity-list">' +
+      actHtml +
+      '</div>' +
+      '</section>' +
+      '<section class="cl-chapter-section" id="rm-sec-' +
+      escapeHtml(sec3Meta.id) +
+      '" data-rm-section="' +
+      escapeHtml(sec3Meta.id) +
+      '">' +
+      '<header class="cl-chapter-head">' +
+      '<span class="cl-chapter-num">' +
+      escapeHtml(sec3Meta.num) +
+      '</span>' +
+      '<h3 class="cl-chapter-title">' +
+      escapeHtml(sec3Meta.title) +
+      '</h3>' +
+      '</header>' +
+      '<div class="rm-training-list">' +
+      trainingsHtml +
+      '</div>' +
+      '</section>' +
+      '<section class="cl-chapter-section" id="rm-sec-' +
+      escapeHtml(sec4Meta.id) +
+      '" data-rm-section="' +
+      escapeHtml(sec4Meta.id) +
+      '">' +
+      '<header class="cl-chapter-head">' +
+      '<span class="cl-chapter-num">' +
+      escapeHtml(sec4Meta.num) +
+      '</span>' +
+      '<h3 class="cl-chapter-title">' +
+      escapeHtml(sec4Meta.title) +
+      '</h3>' +
+      '</header>' +
+      '<div class="rm-cert-grid">' +
+      certsHtml +
+      '</div>' +
+      '<div class="rm-skill-grid">' +
+      skillsHtml +
+      '</div>' +
+      '</section>';
+
+    if (dom.rmModalBody) {
+      dom.rmModalBody.innerHTML =
+        '<article class="cl-reader-article rm-reader-article">' +
+        profileHeaderHtml +
+        kpisHtml +
+        sectionsHtml +
+        relatedHtml +
+        '</article>';
+    }
+
+    state.rmActiveSection = sections.length ? sections[0].id : '';
+    state.rmRendered = true;
+  }
+
+  function applyResumePreferences() {
+    if (!dom.rmModal) return;
+    dom.rmModal.setAttribute('data-cl-theme', state.rmTheme);
+    dom.rmModal.style.setProperty('--cl-font-size', state.rmFontSize + 'px');
+    if (dom.rmFontSizeLabel) {
+      dom.rmFontSizeLabel.textContent = state.rmFontSize + 'px';
+    }
+    dom.rmModal.querySelectorAll('[data-rm-theme-btn]').forEach(function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-rm-theme-btn') === state.rmTheme);
+    });
+  }
+
+  function setActiveResumeToc(sectionId) {
+    if (!sectionId || !dom.rmTocBar) return;
+    state.rmActiveSection = sectionId;
+    dom.rmTocBar.querySelectorAll('[data-rm-jump]').forEach(function (pill) {
+      pill.classList.toggle('is-active', pill.getAttribute('data-rm-jump') === sectionId);
+    });
+  }
+
+  function updateResumeScroll() {
+    if (!dom.rmModalBody || !dom.rmModal || dom.rmModal.hidden) return;
+    const el = dom.rmModalBody;
+    const scrollable = el.scrollHeight - el.clientHeight;
+    const pct =
+      scrollable <= 0 ? 100 : Math.min(100, Math.max(0, Math.round((el.scrollTop / scrollable) * 100)));
+
+    if (dom.rmProgressBar) dom.rmProgressBar.style.width = pct + '%';
+    if (dom.rmProgressText) dom.rmProgressText.textContent = pct + '%';
+
+    const sections = el.querySelectorAll('.cl-chapter-section');
+    if (sections.length && Date.now() > state.rmTocLockUntil) {
+      const containerTop = el.getBoundingClientRect().top;
+      let currentId = sections[0].getAttribute('data-rm-section') || '';
+      sections.forEach(function (sec) {
+        const relTop = sec.getBoundingClientRect().top - containerTop;
+        if (relTop <= 110) {
+          currentId = sec.getAttribute('data-rm-section') || currentId;
+        }
+      });
+      if (scrollable > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 16) {
+        currentId = sections[sections.length - 1].getAttribute('data-rm-section') || currentId;
+      }
+      if (currentId && currentId !== state.rmActiveSection) {
+        setActiveResumeToc(currentId);
+      }
+    }
+
+    if (pct >= 90 && !state.resumeCompleted) {
+      state.resumeCompleted = true;
+      trackEvent('complete_resume_read', { progress_percent: pct });
+    }
+  }
+
+  function openResumeModal(source, sectionId) {
+    if (!DATA.resumeData || !dom.rmModal) return;
+    renderResumeModal();
+    state.lastTriggerEl = document.activeElement;
+
+    applyResumePreferences();
+    dom.rmModal.hidden = false;
+    syncModalBodyLock();
+
+    if (SOUND) SOUND.playPaperRustle();
+
+    if (dom.rmModalBody) {
+      if (sectionId) {
+        const target = document.getElementById('rm-sec-' + sectionId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          setActiveResumeToc(sectionId);
+        } else {
+          dom.rmModalBody.scrollTop = 0;
+        }
+      } else {
+        dom.rmModalBody.scrollTop = 0;
+        const firstSection =
+          DATA.resumeData.sections && DATA.resumeData.sections[0] ? DATA.resumeData.sections[0].id : '';
+        if (firstSection) setActiveResumeToc(firstSection);
+      }
+      updateResumeScroll();
+      dom.rmModalBody.focus();
+    }
+
+    trackEvent('open_resume', { source: source || 'unknown' });
+  }
+
+  function closeResumeModal(skipFocusRestore) {
+    if (!dom.rmModal || dom.rmModal.hidden) return;
+    if (SOUND) SOUND.playSoftClick();
+    dom.rmModal.hidden = true;
+    syncModalBodyLock();
+    if (!skipFocusRestore && state.lastTriggerEl && typeof state.lastTriggerEl.focus === 'function') {
+      state.lastTriggerEl.focus();
+    }
+  }
+
   function initModalsAndDelegation() {
     // 라이트박스 닫기
     if (dom.videoLightbox) {
@@ -2252,6 +3024,174 @@
       });
     }
 
+    // 자기소개서 전용 웹 리더 모달 컨트롤
+    if (dom.clModal) {
+      dom.clModal.addEventListener('click', function (e) {
+        if (e.target && e.target.getAttribute('data-close-cl-modal') === 'true') {
+          closeCoverLetterModal();
+        }
+      });
+      dom.clModal.querySelectorAll('[data-cl-theme-btn]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          state.clTheme = btn.getAttribute('data-cl-theme-btn') || 'dark';
+          applyCoverLetterPreferences();
+          if (SOUND) SOUND.playPaperRustle();
+        });
+      });
+    }
+    if (dom.clModalCloseBtn) {
+      dom.clModalCloseBtn.addEventListener('click', function () {
+        closeCoverLetterModal();
+      });
+    }
+    if (dom.clFontDec) {
+      dom.clFontDec.addEventListener('click', function () {
+        state.clFontSize = Math.max(14, state.clFontSize - 1);
+        applyCoverLetterPreferences();
+        if (SOUND) SOUND.playSoftClick();
+      });
+    }
+    if (dom.clFontInc) {
+      dom.clFontInc.addEventListener('click', function () {
+        state.clFontSize = Math.min(21, state.clFontSize + 1);
+        applyCoverLetterPreferences();
+        if (SOUND) SOUND.playSoftClick();
+      });
+    }
+    if (dom.clTocBar) {
+      dom.clTocBar.addEventListener('click', function (e) {
+        const pill = e.target.closest('[data-cl-jump]');
+        if (!pill) return;
+        const secId = pill.getAttribute('data-cl-jump');
+        const target = secId ? document.getElementById('cl-sec-' + secId) : null;
+        if (target) {
+          state.clTocLockUntil = Date.now() + 800;
+          setActiveCoverLetterToc(secId);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (SOUND) SOUND.playPaperRustle();
+        }
+      });
+    }
+    if (dom.clModalBody) {
+      dom.clModalBody.addEventListener('wheel', function () { state.clTocLockUntil = 0; }, { passive: true });
+      dom.clModalBody.addEventListener('touchstart', function () { state.clTocLockUntil = 0; }, { passive: true });
+      dom.clModalBody.addEventListener('scroll', updateCoverLetterScroll, { passive: true });
+      dom.clModalBody.addEventListener('click', function (e) {
+        const qaBtn = e.target.closest('[data-cl-open-qa]');
+        if (qaBtn) {
+          const sheet = qaBtn.getAttribute('data-cl-open-qa') || 'test-cases';
+          const preservedTrigger = state.lastTriggerEl;
+          closeCoverLetterModal(true);
+          openQaWorkbookModal(sheet);
+          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
+          return;
+        }
+        const autoBtn = e.target.closest('[data-cl-play-auto]');
+        if (autoBtn && DATA.qaPortfolio && DATA.qaPortfolio.automationDemo) {
+          const auto = DATA.qaPortfolio.automationDemo;
+          const preservedTrigger = state.lastTriggerEl;
+          closeCoverLetterModal(true);
+          openVideoLightbox(auto.youtubeUrl, auto.title, 'qa_automation_demo');
+          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
+          return;
+        }
+        const openResumeBtn = e.target.closest('[data-cl-open-resume]');
+        if (openResumeBtn) {
+          const preservedTrigger = state.lastTriggerEl;
+          closeCoverLetterModal(true);
+          openResumeModal('cover_letter_modal');
+          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
+          return;
+        }
+      });
+    }
+
+    // 공식 웹 이력서 모달 컨트롤
+    if (dom.rmModal) {
+      dom.rmModal.addEventListener('click', function (e) {
+        if (e.target && e.target.getAttribute('data-close-rm-modal') === 'true') {
+          closeResumeModal();
+        }
+      });
+      dom.rmModal.querySelectorAll('[data-rm-theme-btn]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          state.rmTheme = btn.getAttribute('data-rm-theme-btn') || 'dark';
+          applyResumePreferences();
+          if (SOUND) SOUND.playPaperRustle();
+        });
+      });
+    }
+    if (dom.rmModalCloseBtn) {
+      dom.rmModalCloseBtn.addEventListener('click', function () {
+        closeResumeModal();
+      });
+    }
+    if (dom.rmFontDec) {
+      dom.rmFontDec.addEventListener('click', function () {
+        state.rmFontSize = Math.max(14, state.rmFontSize - 1);
+        applyResumePreferences();
+        if (SOUND) SOUND.playSoftClick();
+      });
+    }
+    if (dom.rmFontInc) {
+      dom.rmFontInc.addEventListener('click', function () {
+        state.rmFontSize = Math.min(21, state.rmFontSize + 1);
+        applyResumePreferences();
+        if (SOUND) SOUND.playSoftClick();
+      });
+    }
+    if (dom.rmTocBar) {
+      dom.rmTocBar.addEventListener('click', function (e) {
+        const pill = e.target.closest('[data-rm-jump]');
+        if (!pill) return;
+        const secId = pill.getAttribute('data-rm-jump');
+        const target = secId ? document.getElementById('rm-sec-' + secId) : null;
+        if (target) {
+          state.rmTocLockUntil = Date.now() + 800;
+          setActiveResumeToc(secId);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (SOUND) SOUND.playPaperRustle();
+        }
+      });
+    }
+    if (dom.rmModalBody) {
+      dom.rmModalBody.addEventListener('wheel', function () { state.rmTocLockUntil = 0; }, { passive: true });
+      dom.rmModalBody.addEventListener('touchstart', function () { state.rmTocLockUntil = 0; }, { passive: true });
+      dom.rmModalBody.addEventListener('scroll', updateResumeScroll, { passive: true });
+      dom.rmModalBody.addEventListener('click', function (e) {
+        const copyBtn = e.target.closest('[data-copy-email]');
+        if (copyBtn) {
+          const email = copyBtn.getAttribute('data-copy-email');
+          if (SOUND) SOUND.playSoftClick();
+          copyTextSafe(email)
+            .then(function () {
+              showToast('이메일이 클립보드에 복사되었습니다: ' + email);
+              trackEvent('copy_contact_email', { email: email, source: 'resume_modal' });
+            })
+            .catch(function () {
+              showToast('복사에 실패했습니다. 직접 선택해 복사해 주세요.');
+            });
+          return;
+        }
+        const coverBtn = e.target.closest('[data-rm-open-cover]');
+        if (coverBtn) {
+          const preservedTrigger = state.lastTriggerEl;
+          closeResumeModal(true);
+          openCoverLetterModal('resume_modal');
+          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
+          return;
+        }
+        const qaBtn = e.target.closest('[data-rm-open-qa]');
+        if (qaBtn) {
+          const sheet = qaBtn.getAttribute('data-rm-open-qa') || 'test-cases';
+          const preservedTrigger = state.lastTriggerEl;
+          closeResumeModal(true);
+          openQaWorkbookModal(sheet);
+          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
+        }
+      });
+    }
+
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
@@ -2259,6 +3199,10 @@
         closeVideoLightbox();
       } else if (dom.qaModal && !dom.qaModal.hidden) {
         closeQaWorkbookModal();
+      } else if (dom.rmModal && !dom.rmModal.hidden) {
+        closeResumeModal();
+      } else if (dom.clModal && !dom.clModal.hidden) {
+        closeCoverLetterModal();
       } else if (dom.ebookModal && !dom.ebookModal.hidden) {
         closeNovelReader();
       }
@@ -2391,10 +3335,15 @@
           return;
         }
 
-        const pdfLink = e.target.closest('[data-track-pdf]');
-        if (pdfLink) {
-          if (SOUND) SOUND.playSoftClick();
-          trackEvent(pdfLink.getAttribute('data-track-pdf'), { source: 'candle_1_panel' });
+        const resumeBtn = e.target.closest('[data-open-resume]');
+        if (resumeBtn) {
+          openResumeModal(resumeBtn.getAttribute('data-open-resume') || 'candle_1_panel');
+          return;
+        }
+
+        const coverLetterBtn = e.target.closest('[data-open-cover-letter]');
+        if (coverLetterBtn) {
+          openCoverLetterModal(coverLetterBtn.getAttribute('data-open-cover-letter') || 'candle_1_panel');
           return;
         }
 

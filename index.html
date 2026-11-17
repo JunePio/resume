@@ -97,21 +97,21 @@
           모든 촛불 켜기 <span aria-hidden="true">✦</span>
         </button>
 
-        <a
-          id="nav-resume-link"
+        <button
+          type="button"
+          id="nav-resume-btn"
           class="lantern-btn lantern-btn-pdf"
-          href="#"
-          target="_blank"
-          rel="noopener"
-        >이력서 PDF <span aria-hidden="true">↗</span></a>
+          aria-haspopup="dialog"
+          aria-controls="resume-modal"
+        >이력서 <span aria-hidden="true">✦</span></button>
 
-        <a
-          id="nav-cover-link"
+        <button
+          type="button"
+          id="nav-cover-btn"
           class="lantern-btn lantern-btn-pdf"
-          href="#"
-          target="_blank"
-          rel="noopener"
-        >자기소개서 PDF <span aria-hidden="true">↗</span></a>
+          aria-haspopup="dialog"
+          aria-controls="cover-letter-modal"
+        >자기소개서 <span aria-hidden="true">✦</span></button>
 
         <a
           id="nav-linkedin-link"
@@ -217,8 +217,8 @@
         <span id="footer-name">이준영</span> · <span id="footer-tagline">iOS Developer · QA · Creator</span>
       </p>
       <div class="footer-links">
-        <a id="footer-resume-link" href="#" target="_blank" rel="noopener">이력서 PDF ↗</a>
-        <a id="footer-cover-link" href="#" target="_blank" rel="noopener">자기소개서 PDF ↗</a>
+        <button type="button" id="footer-resume-btn" class="footer-link-btn" aria-haspopup="dialog" aria-controls="resume-modal">이력서 보기</button>
+        <button type="button" id="footer-cover-btn" class="footer-link-btn" aria-haspopup="dialog" aria-controls="cover-letter-modal">자기소개서 읽기</button>
         <a id="footer-linkedin-link" href="https://www.linkedin.com/in/younghwen/" target="_blank" rel="noopener">LinkedIn ↗</a>
         <a href="#forest-stage">촛대로 돌아가기 ↑</a>
       </div>
@@ -419,6 +419,106 @@
       </div>
 
       <div id="qa-modal-body" class="qa-modal-body" tabindex="0"></div>
+    </div>
+  </div>
+
+  <!-- 공식 웹 이력서 모달 -->
+  <div
+    id="resume-modal"
+    class="modal-overlay cl-modal-overlay"
+    data-cl-theme="dark"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="rm-modal-title"
+    hidden
+  >
+    <div class="modal-backdrop" data-close-rm-modal="true"></div>
+    <div class="cl-modal-dialog rm-modal-dialog">
+      <div class="cl-progress-track" aria-hidden="true">
+        <div id="rm-progress-bar" class="cl-progress-fill" style="width: 0%;"></div>
+      </div>
+
+      <header class="cl-modal-header">
+        <div class="cl-modal-title-group">
+          <span id="rm-modal-badge" class="cl-badge">OFFICIAL WEB RESUME</span>
+          <h2 id="rm-modal-title" class="cl-modal-title">이준영 공식 이력서</h2>
+          <p id="rm-modal-subtitle" class="cl-modal-subtitle"></p>
+        </div>
+
+        <div class="cl-modal-controls">
+          <span id="rm-progress-text" class="cl-progress-label mono-num">0%</span>
+
+          <div class="cl-control-group" role="group" aria-label="글자 크기 조절">
+            <button type="button" id="rm-font-dec" class="cl-ctrl-btn" aria-label="글자 작게">A-</button>
+            <span id="rm-font-size-label" class="cl-size-label mono-num">16px</span>
+            <button type="button" id="rm-font-inc" class="cl-ctrl-btn" aria-label="글자 크게">A+</button>
+          </div>
+
+          <div class="cl-control-group" role="group" aria-label="읽기 테마 전환">
+            <button type="button" class="cl-theme-btn is-active" data-rm-theme-btn="dark">다크</button>
+            <button type="button" class="cl-theme-btn" data-rm-theme-btn="parchment">양피지</button>
+            <button type="button" class="cl-theme-btn" data-rm-theme-btn="white">화이트</button>
+          </div>
+
+          <button type="button" id="rm-modal-close-btn" class="cl-close-btn" aria-label="이력서 창 닫기">
+            닫기 ✕
+          </button>
+        </div>
+      </header>
+
+      <nav class="cl-toc-bar" id="rm-toc-bar" aria-label="이력서 섹션 목차"></nav>
+
+      <div id="rm-modal-body" class="cl-modal-body" tabindex="0"></div>
+    </div>
+  </div>
+
+  <!-- 자기소개서 전용 웹 리더 모달 -->
+  <div
+    id="cover-letter-modal"
+    class="modal-overlay cl-modal-overlay"
+    data-cl-theme="dark"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cl-modal-title"
+    hidden
+  >
+    <div class="modal-backdrop" data-close-cl-modal="true"></div>
+    <div class="cl-modal-dialog">
+      <div class="cl-progress-track" aria-hidden="true">
+        <div id="cl-progress-bar" class="cl-progress-fill" style="width: 0%;"></div>
+      </div>
+
+      <header class="cl-modal-header">
+        <div class="cl-modal-title-group">
+          <span id="cl-modal-badge" class="cl-badge">COVER LETTER · 5 CHAPTERS</span>
+          <h2 id="cl-modal-title" class="cl-modal-title">이준영 자기소개서</h2>
+          <p id="cl-modal-subtitle" class="cl-modal-subtitle"></p>
+        </div>
+
+        <div class="cl-modal-controls">
+          <span id="cl-progress-text" class="cl-progress-label mono-num">0%</span>
+
+          <div class="cl-control-group" role="group" aria-label="글자 크기 조절">
+            <button type="button" id="cl-font-dec" class="cl-ctrl-btn" aria-label="글자 작게">A-</button>
+            <span id="cl-font-size-label" class="cl-size-label mono-num">16px</span>
+            <button type="button" id="cl-font-inc" class="cl-ctrl-btn" aria-label="글자 크게">A+</button>
+          </div>
+
+          <div class="cl-control-group" role="group" aria-label="읽기 테마 전환">
+            <button type="button" class="cl-theme-btn is-active" data-cl-theme-btn="dark">다크</button>
+            <button type="button" class="cl-theme-btn" data-cl-theme-btn="parchment">양피지</button>
+            <button type="button" class="cl-theme-btn" data-cl-theme-btn="white">화이트</button>
+          </div>
+
+          <button type="button" id="cl-modal-close-btn" class="cl-close-btn" aria-label="자기소개서 창 닫기">
+            닫기 ✕
+          </button>
+        </div>
+      </header>
+
+      <nav class="cl-toc-bar" id="cl-toc-bar" aria-label="자기소개서 챕터 목차"></nav>
+
+      <div id="cl-modal-body" class="cl-modal-body" tabindex="0"></div>
     </div>
   </div>
 
