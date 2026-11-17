@@ -10,7 +10,7 @@
 window.NOVELS_DATA = [
   {
     id: 'humor-day',
-    category: '단편소설',
+    category: '단편시나리오',
     genre: '휴먼 코미디 · 고전 각색',
     title: '유머터지는날 (운수좋은날 각색)',
     logline:
@@ -319,7 +319,7 @@ PD의 큐사인과 함께 방송녹화를 시작한다.
   },
   {
     id: 'fly-to-the-sun',
-    category: '중편소설',
+    category: '중편시나리오',
     genre: '휴먼 드라마 · 성장',
     title: '태양을 향해 날다',
     logline:

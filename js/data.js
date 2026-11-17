@@ -67,7 +67,7 @@ window.PORTFOLIO_DATA = {
       {
         label: '영상 · 창작',
         value: '멀티 포맷 스토리',
-        detail: 'V커머스 영상편집·GTQ 1급 · 단·중편 시나리오 및 소설 집필'
+        detail: 'V커머스 영상편집·GTQ 1급 · 단·중편 시나리오 집필'
       }
     ]
   },
