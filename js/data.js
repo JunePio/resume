@@ -135,9 +135,9 @@ window.PORTFOLIO_DATA = {
         desc: 'Vision·CoreML 실시간 카메라 포즈 가이드 무료 앱 PosePik(posepik.com) 및 FSRS·온디바이스 OCR·WidgetKit·watchOS 플래시카드 앱 Lumio(lumioapp.win) 정식 출시·실기기 QA 운영.'
       },
       {
-        period: '2025.07 ~ 2025.10',
+        period: '2025.07 ~ 2025.12',
         role: 'AI 반려견 어시스턴트("구마야 산책가자") 주도적 QA · LLM RAG · 지도 개발',
-        org: 'NVIDIA AI Academy · 사이드 프로젝트',
+        org: 'NVIDIA AI Academy · 1차 프로젝트',
         desc: '팀 내 QA 프로세스를 주도하여 219개 테스트케이스(TC) 작성·27건 결함 관리·최종 품질 결과 보고서(PASS 93.2%)를 완성하고, LLM 챗봇 RAG 구현과 플레이스 지도·마커 클러스터링·FastAPI+Appium 모바일 테스트 자동화를 수행.'
       },
       {
@@ -154,7 +154,7 @@ window.PORTFOLIO_DATA = {
       }
     ],
     education: [
-      '한국표준협회 — [엔비디아] NVIDIA AI Academy 수료 (AI · 머신러닝 · 딥러닝, 2025.07 ~ 2025.10)',
+      '한국표준협회 — [엔비디아] NVIDIA AI Academy 수료 (AI · 머신러닝 · 딥러닝, 2025.07 ~ 2025.12)',
       '콘센트릭스서비스코리아 — Avalon_iOS 기술 지원 과정 수료 (2024.08 ~ 2024.09)',
       '이젠아카데미 DX교육센터 — V커머스·브랜드 영상콘텐츠 편집제작 수료 (Premiere, After Effects, PS, AI, 2024.02 ~ 2024.07)',
       '남서울대학교 — 지구·지리학 / GIS공학과 학사 졸업 (IT 연합동아리 SOPT 6기 개발파트)'
