@@ -2681,36 +2681,11 @@
       })
       .join('');
 
-    const qaBtnHtml = QA_BOOK
-      ? '<button type="button" class="cl-action-solid" data-cl-open-qa="test-cases">QA 219 TC 산출물 뷰어 열기 ↗</button>'
-      : '';
-    const autoBtnHtml =
-      DATA.qaPortfolio && DATA.qaPortfolio.automationDemo && DATA.qaPortfolio.automationDemo.youtubeUrl
-        ? '<button type="button" class="cl-action-outline" data-cl-play-auto="true">Appium 자동화 시연 영상 보기 ▶</button>'
-        : '';
-    const resumeBtnHtml = DATA.resumeData
-      ? '<button type="button" class="cl-action-outline" data-cl-open-resume="true">공식 웹 이력서 보기 ✦</button>'
-      : '';
-
-    const relatedHtml =
-      '<div class="cl-related-card">' +
-      '<div class="cl-related-head">' +
-      '<strong>포트폴리오 근거 산출물 바로가기</strong>' +
-      '<span>자기소개서에서 언급한 QA 테스트케이스, 모바일 테스트 자동화 시연 영상 및 공식 이력서를 바로 확인할 수 있습니다.</span>' +
-      '</div>' +
-      '<div class="cl-related-actions">' +
-      qaBtnHtml +
-      autoBtnHtml +
-      resumeBtnHtml +
-      '</div>' +
-      '</div>';
-
     if (dom.clModalBody) {
       dom.clModalBody.innerHTML =
         '<article class="cl-reader-article">' +
         (highlightsHtml ? '<div class="cl-highlights-strip">' + highlightsHtml + '</div>' : '') +
         sectionsHtml +
-        relatedHtml +
         '</article>';
     }
 
@@ -3463,34 +3438,6 @@
       dom.clModalBody.addEventListener('wheel', function () { state.clTocLockUntil = 0; }, { passive: true });
       dom.clModalBody.addEventListener('touchstart', function () { state.clTocLockUntil = 0; }, { passive: true });
       dom.clModalBody.addEventListener('scroll', updateCoverLetterScroll, { passive: true });
-      dom.clModalBody.addEventListener('click', function (e) {
-        const qaBtn = e.target.closest('[data-cl-open-qa]');
-        if (qaBtn) {
-          const sheet = qaBtn.getAttribute('data-cl-open-qa') || 'test-cases';
-          const preservedTrigger = state.lastTriggerEl;
-          closeCoverLetterModal(true);
-          openQaWorkbookModal(sheet);
-          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
-          return;
-        }
-        const autoBtn = e.target.closest('[data-cl-play-auto]');
-        if (autoBtn && DATA.qaPortfolio && DATA.qaPortfolio.automationDemo) {
-          const auto = DATA.qaPortfolio.automationDemo;
-          const preservedTrigger = state.lastTriggerEl;
-          closeCoverLetterModal(true);
-          openVideoLightbox(auto.youtubeUrl, auto.title, 'qa_automation_demo');
-          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
-          return;
-        }
-        const openResumeBtn = e.target.closest('[data-cl-open-resume]');
-        if (openResumeBtn) {
-          const preservedTrigger = state.lastTriggerEl;
-          closeCoverLetterModal(true);
-          openResumeModal('cover_letter_modal');
-          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
-          return;
-        }
-      });
     }
 
     // 공식 웹 이력서 모달 컨트롤
