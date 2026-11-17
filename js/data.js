@@ -677,7 +677,7 @@ window.PORTFOLIO_DATA = {
     badge: 'YOUTUBE CHANNEL · @younghwen',
     name: 'Pio-Jun0 (@younghwen)',
     description:
-      '“함께 새로운 음악의 세계를 탐험해봐요!” — 직접 제작한 오리지널 창작 음원(The Art of Interpretation, Phoenix)부터 영화 명장면과 OST의 깊은 맥락을 전하는 번역·자막 콘텐츠(록키 발보아 - 아버지의 현실 조언, 매트릭스 Navras 산스크리트어 해석, 이프 온리, 쿵푸팬더 3 등), 그리고 자체 출시 앱(Lumio · PosePik) 홍보 쇼츠와 프로젝트 시연까지 음악적 감성과 영상 스토리텔링 감각을 함께 아카이빙하는 크리에이터 채널입니다.',
+      '“함께 새로운 음악의 세계를 탐험해봐요!” — 직접 제작한 오리지널 창작 음원(The Art of Interpretation, Phoenix)부터 영화 명장면과 OST의 깊은 맥락을 전하는 번역·자막 콘텐츠(인생이 억울하고 다 포기하고 싶을 때 무조건 봐야 하는 4분 [록키 발보아], 매트릭스 Navras 산스크리트어 해석, 이프 온리, 쿵푸팬더 3 등), 그리고 자체 출시 앱(Lumio · PosePik) 홍보 쇼츠와 프로젝트 시연까지 음악적 감성과 영상 스토리텔링 감각을 함께 아카이빙하는 크리에이터 채널입니다.',
     direction:
       '채널 구성: 오리지널 창작 사운드트랙 · 영화 명장면 & OST 번역·자막 디자인 · AI 앱 프로모션 쇼츠 & 개발 시연 아카이브',
     channelUrl: 'https://www.youtube.com/@younghwen'
@@ -702,7 +702,7 @@ window.PORTFOLIO_DATA = {
     },
     {
       id: 'cinema-rocky-balboa',
-      title: '록키 발보아 - 아버지의 현실 조언',
+      title: '인생이 억울하고 다 포기하고 싶을 때 무조건 봐야 하는 4분 [록키 발보아]',
       duration: '04:19',
       tags: ['#록키발보아', '#명장면자막', '#영화리뷰'],
       goal: '영화 《록키 발보아(2006)》 속 부자(父子)의 길거리 대화 명장면에 담긴 감정선과 핵심 메시지를 몰입감 있는 한국어 자막으로 전달한 대표 영상입니다.',
