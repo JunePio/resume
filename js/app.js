@@ -3058,25 +3058,6 @@
       })
       .join('');
 
-    const coverBtnHtml = DATA.coverLetter
-      ? '<button type="button" class="cl-action-solid" data-rm-open-cover="true">자기소개서 이어 읽기 ✦</button>'
-      : '';
-    const qaBtnHtml = QA_BOOK
-      ? '<button type="button" class="cl-action-outline" data-rm-open-qa="test-cases">QA 219 TC 산출물 뷰어 열기 ↗</button>'
-      : '';
-
-    const relatedHtml =
-      '<div class="cl-related-card">' +
-      '<div class="cl-related-head">' +
-      '<strong>연계 문서 및 검증 산출물</strong>' +
-      '<span>이력서와 이어지는 자기소개서 스토리 및 구마야 산책가자 219 TC QA 산출물을 바로 확인할 수 있습니다.</span>' +
-      '</div>' +
-      '<div class="cl-related-actions">' +
-      coverBtnHtml +
-      qaBtnHtml +
-      '</div>' +
-      '</div>';
-
     const sectionsHtml =
       '<section class="cl-chapter-section" id="rm-sec-' +
       escapeHtml(sec1Meta.id) +
@@ -3157,7 +3138,6 @@
         profileHeaderHtml +
         kpisHtml +
         sectionsHtml +
-        relatedHtml +
         '</article>';
     }
 
@@ -3505,23 +3485,6 @@
             .catch(function () {
               showToast('복사에 실패했습니다. 직접 선택해 복사해 주세요.');
             });
-          return;
-        }
-        const coverBtn = e.target.closest('[data-rm-open-cover]');
-        if (coverBtn) {
-          const preservedTrigger = state.lastTriggerEl;
-          closeResumeModal(true);
-          openCoverLetterModal('resume_modal');
-          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
-          return;
-        }
-        const qaBtn = e.target.closest('[data-rm-open-qa]');
-        if (qaBtn) {
-          const sheet = qaBtn.getAttribute('data-rm-open-qa') || 'test-cases';
-          const preservedTrigger = state.lastTriggerEl;
-          closeResumeModal(true);
-          openQaWorkbookModal(sheet);
-          if (preservedTrigger) state.lastTriggerEl = preservedTrigger;
         }
       });
     }
