@@ -82,7 +82,7 @@ window.PORTFOLIO_DATA = {
       id: 1,
       numeral: '제1초',
       title: '기록과 증명',
-      subtitle: 'Profile & Docs',
+      subtitle: 'Profile',
       tooltip: '프로필 요약 · 올라운더 역량 · 웹 이력서 & 자기소개서',
       panelEyebrow: 'CANDLE I · PROFILE & CREDENTIALS',
       panelTitle: '기록과 증명 — 올라운더 메이커의 이력'
